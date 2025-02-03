@@ -1,19 +1,21 @@
 package app
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/repository/postgres"
+)
 
 type Dependencies struct {
-	ProductService product.Service
+	WorkerService worker.Service
 }
 
 func NewServices(db *sql.DB) Dependencies {
-	productRepo := repository.NewProductRepo(db)
-
-	//initialize service dependencies
-	productService := product.NewService(productRepo)
+	WorkerRepo := postgres.NewWorkerRepo(db)
+	workerService := worker.NewService(WorkerRepo)
 
 	return Dependencies{
-		// OrderService:   orderService,
-		ProductService: productService,
+		WorkerService: workerService,
 	}
 }
