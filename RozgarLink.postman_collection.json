@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "bd8f1f78-169b-4571-9fce-2fc47c4f66b9",
+		"name": "RozgarLink",
+		"description": "Complete API Documentation for the RozgarLink Project.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41360468",
+		"_collection_link": "https://rozgarlink.postman.co/workspace/d221b2fc-158e-43f4-8167-12afbf981afe/collection/41360468-bd8f1f78-169b-4571-9fce-2fc47c4f66b9?action=share&source=collection_link&creator=41360468"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"item": [
+						{
+							"name": "Login Worker",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"harsh@gmail.com\",\n    \"password\": \"Harsh123$\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"login"
+									]
+								},
+								"description": "used to Login from a Worker's / Employer's account.\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"Login Successfull\",\n    \"worker_id\": 20143\n}\n\n ```\n\n> Status Code: **401 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"invalid email or password\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+							},
+							"response": []
+						}
+					],
+					"description": "Login API's for both Workers and Employers"
+				},
+				{
+					"name": "register",
+					"item": [
+						{
+							"name": "Register Worker",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Harsh Jagtap\",\n    \"contact_number\": 901237254,\n    \"email\": \"harsh@gmail.com\",\n    \"password\": \"Harsh123#\",\n    \"sectors\": [\n        \"Construction\",\n        \"Farming\"\n    ],\n    \"skills\": [\"Farming\", \"Construction\"],\n    \"location\": \"Wakad, Pune\",\n    \"rating\": 0,\n    \"language\": [\n        \"English\",\n        \"Marathi\"\n    ],\n    \"availability\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/register/worker",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"register",
+										"worker"
+									]
+								},
+								"description": "for create a new account for Worker.\n\n> Status Code: **201** **Created** \n  \n\n``` json\n{\n    \"message\": \"Successfully Created a new Worker account\",\n    \"worker_id\": 20143\n}\n\n ```\n\n> Response: **Status 400** \n  \n\n``` json\n{\n    \"message\": \"Missing or invalid fields in request\"\n}\n\n ```\n\n> Response: **Status 409** \n  \n\n``` json\n{\n    \"message\": \"Worker with same contact number/email already exists!\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "Register Employer",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Harsh Jagtap\",\n    \"contact_number\": 901237254,\n    \"email\": \"harsh@gmail.com\",\n    \"password\": \"Harsh123#\",\n    \"sectors\": [\n        \"Construction\",\n        \"Farming\",\n        \"Industries\"\n    ],\n    \"location\": \"Wakad, Pune\",\n    \"verification_status\": \"False\",\n    \"rating\": 0,\n    \"language\": [\n        \"English\",\n        \"Marathi\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/register/employee",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"register",
+										"employee"
+									]
+								},
+								"description": "for create a new account for Employer.\n\n> Status Code: **201 Created** \n  \n\n``` json\n{\n    \"message\": \"successfully created a new employer account\",\n    \"employer_id\": 20143\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **409 Conflict** \n  \n\n``` json\n{\n    \"message\": \"worker with same contact number/email already exists!\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+							},
+							"response": []
+						}
+					],
+					"description": "Registers/Creates Users based on all the details provided"
+				}
+			],
+			"description": "Comprises of all the Authentication API's"
+		},
+		{
+			"name": "worker",
+			"item": [
+				{
+					"name": "Fetch Worker with ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/worker/:worker_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"worker",
+								":worker_id"
+							],
+							"variable": [
+								{
+									"key": "worker_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieves details of a particular Worker\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"worker profile retrieved succesfully\",\n    \"worker\": {\n        \"worker_id\": 20131,\n        \"name\": \"Harsh Jagtap\",\n        \"contact_number\": 901237254,\n        \"email\": \"harsh@gmail.com\",\n        \"password\": \"Harsh123#\",\n        \"sectors\": [\n            \"Construction\",\n            \"Farming\"\n        ],\n        \"skills\": [\"Farming\", \"Construction\"],\n        \"location\": \"Wakad, Pune\",\n        \"rating\": 0,\n        \"language\": [\n            \"English\",\n            \"Marathi\"\n        ],\n        \"availability\": true\n    }\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"worker with ID not found\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Worker with ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/worker/:worker_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"worker",
+								":worker_id"
+							],
+							"variable": [
+								{
+									"key": "worker_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Description: edit details for a particular Worker\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully updated worker details\",\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"worker with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Worker with ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/worker/:worker_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"worker",
+								":worker_id"
+							],
+							"variable": [
+								{
+									"key": "worker_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Delete a particular Worker.\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully deleted worker account\",\n    \"worker_id\": 20143\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"worker with ID not found\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				}
+			],
+			"description": "Folder holding all the data for API's related to workers"
+		},
+		{
+			"name": "job",
+			"item": [
+				{
+					"name": "Fetch all Jobs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/jobs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"jobs"
+							]
+						},
+						"description": "Retreives details of all the Jobs\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully fetched all jobs\",\n    \"jobs\": [\n        {\n            \"job_id\": 1723,\n            \"employer_id\": 20123,\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        },\n        {\n            \"employer_id\": \"1202\",\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        },\n        {\n            \"employer_id\": \"1202\",\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        }\n    ]\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Job",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employer_id\": \"1202\",\n    \"title\": \"Construction Site Worker\",\n    \"description\": \"A person who will help with all the tasks performed on a construction site\",\n    \"skills_required\": [\n        \"Construction\",\n        \"Handling Cements and Bricks\"\n    ],\n    \"wages\": 700,\n    \"duration_in_hours\": 7,\n    \"status\": \"Active\",\n    \"location\": \"Hinjewade, Pune\",\n    \"deadline\": \"19-09-2023\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/jobs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"jobs"
+							]
+						},
+						"description": "create a New job by providing basic job details.\n\n> Status Code: **201 Created** \n  \n\n``` json\n{\n    \"message\": \"successfully created a new job\",\n    \"employer_id\": 20143\n    \"job_id\": 28712\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Job with ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/job/:job_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"job",
+								":job_id"
+							],
+							"variable": [
+								{
+									"key": "job_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieves details of a particular Job\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n        \"job_id\": 1723,\n        \"employer_id\": 20123,\n        \"title\": \"Construction Site Worker\",\n        \"description\": \"A person who will help with all the tasks performed on a construction site\",\n        \"skills_required\": [\n            \"Construction\",\n            \"Handling Cements and Bricks\"\n        ],\n        \"wages\": 700,\n        \"duration_in_hours\": 7,\n        \"status\": \"Active\",\n        \"location\": \"Hinjewade, Pune\",\n        \"deadline\": \"19-09-2023\"\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"job with ID not found\",\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Job with ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/job/:job_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"job",
+								":job_id"
+							],
+							"variable": [
+								{
+									"key": "job_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Edits details of a particular Job\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully updated job details\",\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"job with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Job with ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/job/:job_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"job",
+								":job_id"
+							],
+							"variable": [
+								{
+									"key": "job_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Deletes a particular Job\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully deleted job with ID\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"job with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Jobs by Employer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/employer/:employer_id/jobs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"employer",
+								":employer_id",
+								"jobs"
+							],
+							"variable": [
+								{
+									"key": "employer_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieves details of all the jobs that were created by a particular Employer.\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully fetched all jobs by employer_id\",\n    \"jobs\": [\n        {\n            \"job_id\": 1723,\n            \"employer_id\": 20123,\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        },\n        {\n            \"job_id\": 1233,\n            \"employer_id\": \"1202\",\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        },\n        {\n            \"job_id\": 6723,\n            \"employer_id\": \"1202\",\n            \"title\": \"Construction Site Worker\",\n            \"description\": \"A person who will help with all the tasks performed on a construction site\",\n            \"skills_required\": [\n                \"Construction\",\n                \"Handling Cements and Bricks\"\n            ],\n            \"wages\": 700,\n            \"duration_in_hours\": 7,\n            \"status\": \"Active\",\n            \"location\": \"Hinjewade, Pune\",\n            \"deadline\": \"19-09-2023\"\n        }\n    ]\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"No job found for employer_id\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				}
+			],
+			"description": "Holds all the API's related to JOB's"
+		},
+		{
+			"name": "employer",
+			"item": [
+				{
+					"name": "Fetch Employer by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/employer/:employer_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"employer",
+								":employer_id"
+							],
+							"variable": [
+								{
+									"key": "employer_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieves all the details of a particular Employer\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully fetched employer by id\",\n    \"employer\": {\n            \"name\": \"Harsh Jagtap\",\n            \"contact_number\": 901237254,\n            \"email\": \"harsh@gmail.com\",\n            \"password\": \"Harsh123#\",\n            \"sectors\": [\n                \"Construction\",\n                \"Farming\",\n                \"Industries\"\n            ],\n            \"location\": \"Wakad, Pune\",\n            \"verification_status\": \"False\",\n            \"rating\": 0,\n            \"language\": [\n                \"English\",\n                \"Marathi\"\n            ]\n        }\n    }\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"employer with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Employer with ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/employer/:employer_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"employer",
+								":employer_id"
+							],
+							"variable": [
+								{
+									"key": "employer_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Edits details of a particular Employer\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully updated employer details\",\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"employer with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Employer with ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/employer/:employer_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"employer",
+								":employer_id"
+							],
+							"variable": [
+								{
+									"key": "employer_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Deletes a particular Employer\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully deleted employer details\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"employer with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch all Employers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/employer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"employer"
+							]
+						},
+						"description": "Retrieves details of all the Employers\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully fetched all employers\",\n    \"employers\": [\n        {\n            \"emloyer_id\": 1526,\n            \"name\": \"Harsh Jagtap\",\n            \"contact_number\": 901237254,\n            \"email\": \"harsh@gmail.com\",\n            \"password\": \"Harsh123#\",\n            \"sectors\": [\n                \"Construction\",\n                \"Farming\",\n                \"Industries\"\n            ],\n            \"location\": \"Wakad, Pune\",\n            \"verification_status\": \"False\",\n            \"rating\": 0,\n            \"language\": [\n                \"English\",\n                \"Marathi\"\n            ]\n        },\n        {\n            \"employer_id\": 1726,\n            \"name\": \"Harsh Jagtap\",\n            \"contact_number\": 901237254,\n            \"email\": \"harsh@gmail.com\",\n            \"password\": \"Harsh123#\",\n            \"sectors\": [\n                \"Construction\",\n                \"Farming\",\n                \"Industries\"\n            ],\n            \"location\": \"Wakad, Pune\",\n            \"verification_status\": \"False\",\n            \"rating\": 0,\n            \"language\": [\n                \"English\",\n                \"Marathi\"\n            ]\n        },\n        {\n            \"employer_id\": 1827,\n            \"name\": \"Harsh Jagtap\",\n            \"contact_number\": 901237254,\n            \"email\": \"harsh@gmail.com\",\n            \"password\": \"Harsh123#\",\n            \"sectors\": [\n                \"Construction\",\n                \"Farming\",\n                \"Industries\"\n            ],\n            \"location\": \"Wakad, Pune\",\n            \"verification_status\": \"False\",\n            \"rating\": 0,\n            \"language\": [\n                \"English\",\n                \"Marathi\"\n            ]\n        }\n    ]\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				}
+			],
+			"description": "Holds all the API's that are related to the Employer Role"
+		},
+		{
+			"name": "application",
+			"item": [
+				{
+					"name": "Fetch Applications by Worker ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/worker/:worker_id/applications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"worker",
+								":worker_id",
+								"applications"
+							],
+							"variable": [
+								{
+									"key": "worker_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieves all the details of a particular application.\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully retrieved all applications by worker id\",\n    \"applications\": [\n        {\n            \"application_id\": 1812,\n            \"job_id\": 1923,\n            \"worker_id\": 2023,\n            \"status\": \"Applied\"\n        },\n        {\n            \"application_id\": 1813,\n            \"job_id\": 1927,\n            \"worker_id\": 2023,\n            \"status\": \"Applied\"\n        },\n        {\n            \"application_id\": 1814,\n            \"job_id\": 1991,\n            \"worker_id\": 2023,\n            \"status\": \"Applied\"\n        }\n    ]\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"worker with ID not found\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Create new Application",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"job_id\": \"J0192\",\n    \"worker_id\": \"20123\",\n    \"status\": \"Applied\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/application",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"application"
+							]
+						},
+						"description": "Creates an application by providing basic details of the application.\n\n> Status Code: **201 Created** \n  \n\n``` json\n{\n    \"message\": \"successfully created new application\",\n    \"application_id\": 1029\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Application with ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/application/:application_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"application",
+								":application_id"
+							],
+							"variable": [
+								{
+									"key": "application_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Retrieve all the information of a particular application\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully retrieved application by application id\",\n    \"applications\": {\n        \"application_id\": 1812,\n        \"job_id\": 1923,\n        \"worker_id\": 2023,\n        \"status\": \"Selected\"\n    }\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"application with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Application with ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/application/:application_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"application",
+								":application_id"
+							],
+							"variable": [
+								{
+									"key": "application_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Edit details of a particular application\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully updated application details\",\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"application with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Application with ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/application/:application_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"application",
+								":application_id"
+							],
+							"variable": [
+								{
+									"key": "application_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Delete a particular application\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully deleted application details\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"application with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "sectors",
+			"item": [
+				{
+					"name": "Create new Sector",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Construction\",\n    \"description\": \"a sample description about any Sector that a worker will apply for\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/sector",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sector"
+							]
+						},
+						"description": "Creates a new Job sector by providing basic details\n\n> Status Code: **201 Created** \n  \n\n``` json\n{\n    \"message\": \"successfully created a new sector\",\n    \"sector_id\": 1001\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```\n\n> Status Code: **409 Conflict** \n  \n\n``` json\n{\n    \"message\": \"sector with same name already exists!\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Sector",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/sector/:sector_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sector",
+								":sector_id"
+							],
+							"variable": [
+								{
+									"key": "sector_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Deletes an existing Sector with given Id\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully deleted sector with id\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"sector with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Edit a Sector",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/sector/:sector_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sector",
+								":sector_id"
+							],
+							"variable": [
+								{
+									"key": "sector_id",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Edits a particular sector\n\nStatus Code: **200 OK**\n\n``` json\n{\n    \"message\": \"successfully updated sector details\",\n    \"sector_id\": 1010\n}\n\n ```\n\n> Status Code: **400 Bad Request** \n  \n\n``` json\n{\n    \"message\": \"missing or invalid fields in request\",\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"sector with ID doesn't exist\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch all Sectors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/sector",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sector"
+							]
+						},
+						"description": "Retrieves all the Sectors present.\n\n> Status Code: **200 OK** \n  \n\n``` json\n{\n    \"message\": \"successfully fetched details for all sectors\",\n    \"sectors\": [\n        {\n            \"sector_id\": 1010,\n            \"name\": \"Construction\",\n            \"description\": \"a sample description about any Sector that a worker will apply for\"\n        },\n        {\n            \"sector_id\": 1013,\n            \"name\": \"Farming\",\n            \"description\": \"a description about any Sector that a worker will apply for\"\n        },\n        {\n            \"sector_id\": 1001,\n            \"name\": \"Small Scale Industries\",\n            \"description\": \"some short description about any Sector that a worker will apply for\"\n        }\n    ]\n}\n\n ```\n\n> Status Code: **404 Not Found** \n  \n\n``` json\n{\n    \"message\": \"no sectors found\"\n}\n\n ```\n\n> Status Code: **500 Internal Server Error** \n  \n\n``` json\n{\n    \"message\": \"internal issue: something went wrong! please try again.\"\n}\n\n ```"
+					},
+					"response": []
+				}
+			],
+			"description": "(Optional)\n\nFor adding, editing, removing Job Sectors"
+		}
+	]
+}
