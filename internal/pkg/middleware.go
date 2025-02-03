@@ -8,13 +8,11 @@ import (
 
 type httpErrorResponse struct {
 	ErrorMessage string `json:"error_message"`
-	// errorStatusCode int    `json:"error_code"`
-	// data            interface{}    `json:"data"`
 }
 
 type httpSuccessResponse struct {
 	SuccessMessage string      `json:"success_message"`
-	data           interface{} `json:"data"`
+	Data           interface{} `json:"data"`
 }
 
 func HandleErrorResponse(w http.ResponseWriter, errMessage string, errStatusCode int) {
@@ -43,7 +41,7 @@ func HandleSuccessResponse(w http.ResponseWriter, successMessage string, StatusC
 
 	response := httpSuccessResponse{
 		SuccessMessage: successMessage,
-		data:           data,
+		Data:           data,
 	}
 
 	jsonData, err := json.Marshal(response)

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -23,21 +22,15 @@ func HandleWorkerByID(workerSvc worker.Service) func(w http.ResponseWriter, r *h
 
 		response, err := workerSvc.GetWorkerByID(ctx, nil, int64(productID))
 		if err != nil {
-			http.Error(w, "", http.StatusInternalServerError)
+			middleware.HandleErrorResponse(w, "error occured while fetching from database", http.StatusInternalServerError)
 			return
 		}
 
 		if response.ID == 0 {
-			http.Error(w, "no worker found with ID", http.StatusNotFound)
+			middleware.HandleErrorResponse(w, "error occured: no worker found with ID", http.StatusInternalServerError)
 			return
 		}
 
-		httpResp, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, "error occured while marshaling response payload", http.StatusInternalServerError)
-			return
-		}
-		w.Write(httpResp)
-
+		middleware.HandleSuccessResponse(w, "worker details retrieved successfully", http.StatusOK, response)
 	}
 }
