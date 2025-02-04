@@ -15,21 +15,21 @@ func HandleWorkerByID(workerSvc worker.Service) func(w http.ResponseWriter, r *h
 		ctx := r.Context()
 
 		vars := mux.Vars(r)
-		rawProductID := vars["worker_id"]
-		productID, err := strconv.Atoi(rawProductID)
+		id := vars["worker_id"]
+		workerID, err := strconv.Atoi(id)
 		if err != nil {
 			middleware.HandleErrorResponse(w, "error occured while converting workerID to an integer", http.StatusInternalServerError)
 			return
 		}
 
-		response, err := workerSvc.GetWorkerByID(ctx, nil, int64(productID))
+		response, err := workerSvc.GetWorkerByID(ctx, int64(workerID))
 		if err != nil {
 			middleware.HandleErrorResponse(w, "error occured while fetching from database", http.StatusInternalServerError)
 			return
 		}
 
 		if response.ID == 0 {
-			middleware.HandleErrorResponse(w, "error occured: no worker found with ID", http.StatusInternalServerError)
+			middleware.HandleErrorResponse(w, "error occured: no worker found with ID: "+id, http.StatusInternalServerError)
 			return
 		}
 

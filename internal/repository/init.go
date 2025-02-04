@@ -3,20 +3,34 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
-func ConnectDB() (*sql.DB, error) {
-	const (
-		host     = "localhost"
-		port     = 5432
-		user     = "postgres"
-		password = "1234"
-		dbname   = "rozgarlink"
-	)
+type DbData struct {
+	host     string
+	port     string
+	user     string
+	password string
+	dbname   string
+}
+
+func InitDB() (*sql.DB, error) {
+
+	godotenv.Load()
+
+	dbData := DbData{
+		host:     os.Getenv("DB_HOST"),
+		port:     os.Getenv("DB_PORT"),
+		user:     os.Getenv("DB_USER"),
+		password: os.Getenv("DB_PASSWORD"),
+		dbname:   os.Getenv("DB_NAME"),
+	}
 
 	psqlconn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname,
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbData.host, dbData.port, dbData.user, dbData.password, dbData.dbname,
 	)
 
 	db, err := sql.Open("postgres", psqlconn)
@@ -31,6 +45,5 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, err
 	}
 
-	// log.Println("Database connected!")
 	return db, nil
 }

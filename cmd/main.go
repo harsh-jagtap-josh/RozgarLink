@@ -2,33 +2,38 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-
-	_ "github.com/lib/pq"
+	"os"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/api"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repository"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	// ctx := context.Background()
 
-	sqlDB, err := repository.ConnectDB()
+	godotenv.Load()
+	sqlDB, err := repository.InitDB()
 	if err != nil {
 		fmt.Println("error connecting to database" + err.Error())
 		return
 	}
 
 	services := app.NewServices(sqlDB)
-
 	router := api.NewRouter(services)
 
+	port := os.Getenv("PORT")
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", 8080),
+		Addr:    fmt.Sprintf(":%v", port),
 		Handler: router,
 	}
-	fmt.Println("Server up and running on port 8080")
-	log.Fatal(srv.ListenAndServe())
+	fmt.Println("Server up and running on PORT", port)
+	err = srv.ListenAndServe()
+	if err != nil {
+		fmt.Errorf("error while starting http server, %s", err.Error())
+		return
+	}
 }

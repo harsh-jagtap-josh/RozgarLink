@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-type httpErrorResponse struct {
+type ErrorResponse struct {
 	ErrorMessage string `json:"error_message"`
 }
 
-type httpSuccessResponse struct {
+type SuccessResponse struct {
 	SuccessMessage string      `json:"success_message"`
 	Data           interface{} `json:"data"`
 }
@@ -19,7 +19,7 @@ func HandleErrorResponse(w http.ResponseWriter, errMessage string, errStatusCode
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(errStatusCode)
 
-	response := httpErrorResponse{
+	response := ErrorResponse{
 		ErrorMessage: errMessage,
 	}
 
@@ -39,7 +39,7 @@ func HandleSuccessResponse(w http.ResponseWriter, successMessage string, StatusC
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(StatusCode)
 
-	response := httpSuccessResponse{
+	response := SuccessResponse{
 		SuccessMessage: successMessage,
 		Data:           data,
 	}
