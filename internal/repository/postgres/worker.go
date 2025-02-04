@@ -17,9 +17,9 @@ func NewWorkerRepo(db *sql.DB) repository.WorkerStorer {
 	}
 }
 
-func (ps *workerStore) GetWorkerByID(ctx context.Context, tx repository.Transaction, workerID int64) (repository.Worker, error) {
+func (ws *workerStore) GetWorkerByID(ctx context.Context, tx repository.Transaction, workerID int64) (repository.Worker, error) {
 	query := `SELECT * FROM Workers WHERE id = $1;`
-	row := ps.DB.QueryRow(query, workerID)
+	row := ws.DB.QueryRow(query, workerID)
 
 	var worker repository.Worker
 	err := row.Scan(&worker.ID, &worker.Name, &worker.ContactNumber, &worker.Email, &worker.Gender,

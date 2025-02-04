@@ -11,7 +11,9 @@ import (
 
 func HandleWorkerByID(workerSvc worker.Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		ctx := r.Context()
+
 		vars := mux.Vars(r)
 		rawProductID := vars["worker_id"]
 		productID, err := strconv.Atoi(rawProductID)

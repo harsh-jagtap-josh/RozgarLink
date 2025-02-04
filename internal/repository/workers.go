@@ -18,19 +18,19 @@ const (
 )
 
 type Worker struct {
-	ID              int       `json:"id"`
-	Name            string    `json:"name"`
-	ContactNumber   string    `json:"contact_number"`
-	Email           string    `json:"email,omitempty"`
-	Gender          Gender    `json:"gender"`
-	Password        string    `json:"password"`
-	Sectors         string    `json:"sectors"`
-	Skills          string    `json:"skills"`
-	Location        *int      `json:"location,omitempty"`
-	IsAvailable     *bool     `json:"is_available,omitempty"`
-	Rating          *float64  `json:"rating,omitempty"`
-	TotalJobsWorked *int      `json:"total_jobs_worked,omitempty"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	Language        string    `json:"language"`
+	ID              int       `db:"id"`
+	Name            string    `db:"name"`
+	ContactNumber   string    `db:"contact_number"`
+	Email           string    `db:"email,omitempty"`
+	Gender          Gender    `db:"gender"`
+	Password        string    `db:"password"`
+	Sectors         string    `db:"sectors"`
+	Skills          string    `db:"skills"`
+	Location        *int      `db:"location,omitempty"`
+	IsAvailable     *bool     `db:"is_available,omitempty"`
+	Rating          *float64  `db:"rating,omitempty"`
+	TotalJobsWorked *int      `db:"total_jobs_worked,omitempty"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	Language        string    `db:"language"`
 }
