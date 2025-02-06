@@ -1,4 +1,4 @@
-package repository
+package db
 
 import (
 	"database/sql"
@@ -18,7 +18,11 @@ type DbData struct {
 
 func InitDB() (*sql.DB, error) {
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("error occured in loading env variables while database connection")
+		return nil, err
+	}
 
 	dbData := DbData{
 		host:     os.Getenv("DB_HOST"),

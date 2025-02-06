@@ -3,33 +3,28 @@ package worker
 import (
 	"context"
 
-	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/dto"
-	"github.com/harsh-jagtap-josh/RozgarLink/internal/repository"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
 
 type service struct {
-	workerRepo repository.WorkerStorer
+	workerRepo repo.WorkerStorer
 }
 
 type Service interface {
-	GetWorkerByID(ctx context.Context, productID int64) (dto.Worker, error)
+	GetWorkerByID(ctx context.Context, productID int) (repo.Worker, error)
 }
 
-func NewService(workerRepo repository.WorkerStorer) Service {
+func NewService(workerRepo repo.WorkerStorer) Service {
 	return &service{
 		workerRepo: workerRepo,
 	}
 }
 
-func (ws *service) GetWorkerByID(ctx context.Context, productID int64) (dto.Worker, error) {
+func (ws *service) GetWorkerByID(ctx context.Context, productID int) (repo.Worker, error) {
 	workerInfoDB, err := ws.workerRepo.GetWorkerByID(ctx, productID)
 	if err != nil {
-		return dto.Worker{}, err
+		return repo.Worker{}, err
 	}
 
-	if workerInfoDB.ID == 0 {
-		return dto.Worker{}, nil
-	}
-
-	return workerInfoDB, nil
+	return workerInfoDB, err
 }

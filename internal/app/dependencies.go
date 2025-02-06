@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
-	"github.com/harsh-jagtap-josh/RozgarLink/internal/repository/postgres"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
 
 type Dependencies struct {
@@ -12,7 +12,7 @@ type Dependencies struct {
 }
 
 func NewServices(db *sql.DB) Dependencies {
-	WorkerRepo := postgres.NewWorkerRepo(db)
+	WorkerRepo := repo.NewWorkerRepo(db)
 	workerService := worker.NewService(WorkerRepo)
 
 	return Dependencies{
