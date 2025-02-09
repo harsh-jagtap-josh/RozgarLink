@@ -24,9 +24,9 @@ func main() {
 		return
 	}
 
-	sqlDB, err := db.InitDB()
+	sqlDB, err := db.InitDB(ctx)
 	if err != nil {
-		logger.Errorw(ctx, "failed to start a database connection", zap.Error(err))
+		logger.Errorw(ctx, "failed to establish a database connection", zap.Error(err))
 		return
 	}
 

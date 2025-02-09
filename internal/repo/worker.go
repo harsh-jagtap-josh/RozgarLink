@@ -3,13 +3,12 @@ package repo
 import (
 	"context"
 	"database/sql"
-	// "github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
-	// repo "github.com/harsh-jagtap-josh/RozgarLink/internal/repository"
 )
 
-const SelectWorkerByIDQuery = "SELECT id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language FROM workers WHERE id = $1;"
-const UpdateWorkerByIDQuery = ""
-const DeleteWorkerByIDQuery = ""
+const selectWorkerByIDQuery = "SELECT id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language FROM workers WHERE id = $1;"
+
+// const updateWorkerByIDQuery = ""
+// const deleteWorkerByIDQuery = ""
 
 type WorkerStorer interface {
 	GetWorkerByID(ctx context.Context, workerID int) (Worker, error)
@@ -27,7 +26,7 @@ func NewWorkerRepo(db *sql.DB) WorkerStorer {
 
 func (ws *workerStore) GetWorkerByID(ctx context.Context, workerID int) (Worker, error) {
 
-	row := ws.BaseRepository.DB.QueryRow(SelectWorkerByIDQuery, workerID)
+	row := ws.BaseRepository.DB.QueryRow(selectWorkerByIDQuery, workerID)
 
 	var worker Worker
 	err := row.Scan(&worker.ID, &worker.Name, &worker.ContactNumber, &worker.Email, &worker.Gender, &worker.Sectors, &worker.Skills, &worker.Location, &worker.IsAvailable,

@@ -10,8 +10,8 @@ import (
 func NewRouter(deps Dependencies) *mux.Router {
 	router := mux.NewRouter()
 
-	workersRouter := router.PathPrefix("/workers").Subrouter()
-	workersRouter.HandleFunc("/{worker_id}", worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
+	workerRouter := router.PathPrefix("/workers").Subrouter()
+	workerRouter.HandleFunc("/{worker_id}", worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
 
 	return router
 }

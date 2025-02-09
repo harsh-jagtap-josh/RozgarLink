@@ -22,7 +22,7 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 		id := vars["worker_id"]
 		workerID, err := strconv.Atoi(id)
 		if err != nil {
-			logger.Errorw(ctx, apperrors.ErrConvertIdToInt, zap.Error(err), zap.String("ID", id))
+			logger.Errorw(ctx, apperrors.ErrInvalidWorkerId, zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrConvertIdToInt, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
