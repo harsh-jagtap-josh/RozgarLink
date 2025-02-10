@@ -20,8 +20,8 @@ func NewService(workerRepo repo.WorkerStorer) Service {
 	}
 }
 
-func (ws *service) GetWorkerByID(ctx context.Context, productID int) (repo.Worker, error) {
-	workerInfoDB, err := ws.workerRepo.GetWorkerByID(ctx, productID)
+func (ws *service) GetWorkerByID(ctx context.Context, workerId int) (repo.Worker, error) {
+	workerInfoDB, err := ws.workerRepo.GetWorkerByID(ctx, workerId)
 	if err != nil {
 		return repo.Worker{}, err
 	}
