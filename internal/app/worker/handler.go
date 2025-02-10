@@ -29,14 +29,13 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 		}
 
 		response, err := workerSvc.GetWorkerByID(ctx, workerID)
-		if errors.Is(err, sql.ErrNoRows) {
-			logger.Errorw(ctx, apperrors.ErrNoWorkerExists, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrNoWorkerExists, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
-			return
-		}
-
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				logger.Errorw(ctx, apperrors.ErrNoWorkerExists, zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrNoWorkerExists, id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
+				return
+			}
 			logger.Errorw(ctx, apperrors.ErrFetchFromDb, zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrFetchFromDb, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
