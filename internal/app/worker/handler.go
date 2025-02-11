@@ -26,7 +26,7 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		response, err := workerSvc.GetWorkerByID(ctx, workerID)
+		response, err := workerSvc.FetchWorkerByID(ctx, workerID)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDb, id)

@@ -11,7 +11,7 @@ type service struct {
 }
 
 type Service interface {
-	GetWorkerByID(ctx context.Context, workerId int) (Worker, error)
+	FetchWorkerByID(ctx context.Context, workerId int) (Worker, error)
 }
 
 func NewService(workerRepo repo.WorkerStorer) Service {
@@ -20,7 +20,7 @@ func NewService(workerRepo repo.WorkerStorer) Service {
 	}
 }
 
-func (ws *service) GetWorkerByID(ctx context.Context, workerId int) (Worker, error) {
+func (ws *service) FetchWorkerByID(ctx context.Context, workerId int) (Worker, error) {
 
 	workerInfoDB, err := ws.workerRepo.GetWorkerByID(ctx, workerId)
 	if err != nil {
