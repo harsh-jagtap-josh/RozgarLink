@@ -46,7 +46,6 @@ func InitDB(ctx context.Context) (*sql.DB, error) {
 		return nil, err
 	}
 
-	// Check if the database connection is working
 	err = db.Ping()
 	if err != nil {
 		logger.Errorw(ctx, "error occured while checking database connection status", zap.Error(err))

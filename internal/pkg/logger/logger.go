@@ -17,15 +17,15 @@ func init() {
 func getLogger() (logger *zap.Logger) {
 
 	config := zap.Config{
-		Level:             zap.NewAtomicLevelAt(zap.InfoLevel), // can set to any level like InfoLevel, ErrorLevel, DebugLevel
-		Development:       false,                               // takes the stack traces more, kept false so now it wont
-		Encoding:          "console",                           // two options json and console, using console will return it in console
-		EncoderConfig:     zap.NewDevelopmentEncoderConfig(),   // can be either Development congig or Production config
-		OutputPaths:       []string{"stdout"},                  // all the output paths, add output to all the paths specified
+		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development:       false,
+		Encoding:          "console",
+		EncoderConfig:     zap.NewDevelopmentEncoderConfig(),
+		OutputPaths:       []string{"stdout"},
 		DisableStacktrace: true,
 	}
 
-	logger, err := config.Build() // to build a logger based on the config provided
+	logger, err := config.Build()
 	if err != nil {
 		fmt.Printf("failed to initialize logger %v", err)
 		return nil

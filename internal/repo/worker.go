@@ -9,9 +9,6 @@ import (
 
 const fetchWorkerByIDQuery = "SELECT id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language FROM workers WHERE id = $1;"
 
-// const updateWorkerByIDQuery = ""
-// const deleteWorkerByIDQuery = ""
-
 type WorkerStorer interface {
 	GetWorkerByID(ctx context.Context, workerID int) (Worker, error)
 }
@@ -28,7 +25,7 @@ func NewWorkerRepo(db *sql.DB) WorkerStorer {
 
 func (ws *workerStore) GetWorkerByID(ctx context.Context, workerID int) (Worker, error) {
 
-	db := sqlx.NewDb(ws.DB, "postgres") // sqlx db connection
+	db := sqlx.NewDb(ws.DB, "postgres")
 
 	var worker Worker
 
