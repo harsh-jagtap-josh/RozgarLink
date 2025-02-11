@@ -3,9 +3,11 @@ package repo
 import (
 	"context"
 	"database/sql"
+
+	"github.com/jmoiron/sqlx"
 )
 
-const selectWorkerByIDQuery = "SELECT id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language FROM workers WHERE id = $1;"
+const fetchWorkerByIDQuery = "SELECT id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language FROM workers WHERE id = $1;"
 
 // const updateWorkerByIDQuery = ""
 // const deleteWorkerByIDQuery = ""
@@ -26,12 +28,11 @@ func NewWorkerRepo(db *sql.DB) WorkerStorer {
 
 func (ws *workerStore) GetWorkerByID(ctx context.Context, workerID int) (Worker, error) {
 
-	row := ws.BaseRepository.DB.QueryRow(selectWorkerByIDQuery, workerID)
+	db := sqlx.NewDb(ws.DB, "postgres") // sqlx db connection
 
 	var worker Worker
-	err := row.Scan(&worker.ID, &worker.Name, &worker.ContactNumber, &worker.Email, &worker.Gender, &worker.Sectors, &worker.Skills, &worker.Location, &worker.IsAvailable,
-		&worker.Rating, &worker.TotalJobsWorked, &worker.CreatedAt, &worker.UpdatedAt, &worker.Language)
 
+	err := db.Get(&worker, fetchWorkerByIDQuery, workerID)
 	if err != nil {
 		return Worker{}, err
 	}

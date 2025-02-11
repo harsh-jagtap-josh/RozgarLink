@@ -11,7 +11,7 @@ type service struct {
 }
 
 type Service interface {
-	GetWorkerByID(ctx context.Context, productID int) (repo.Worker, error)
+	GetWorkerByID(ctx context.Context, workerId int) (Worker, error)
 }
 
 func NewService(workerRepo repo.WorkerStorer) Service {
@@ -20,11 +20,13 @@ func NewService(workerRepo repo.WorkerStorer) Service {
 	}
 }
 
-func (ws *service) GetWorkerByID(ctx context.Context, workerId int) (repo.Worker, error) {
+func (ws *service) GetWorkerByID(ctx context.Context, workerId int) (Worker, error) {
+
 	workerInfoDB, err := ws.workerRepo.GetWorkerByID(ctx, workerId)
 	if err != nil {
-		return repo.Worker{}, err
+		return Worker{}, err
 	}
 
-	return workerInfoDB, err
+	newWorker := Mapper(workerInfoDB)
+	return newWorker, nil
 }

@@ -1,8 +1,6 @@
 package worker
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -22,22 +20,16 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 		id := vars["worker_id"]
 		workerID, err := strconv.Atoi(id)
 		if err != nil {
-			logger.Errorw(ctx, apperrors.ErrInvalidWorkerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrConvertIdToInt, id)
+			logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgConvertIdToInt, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
 
 		response, err := workerSvc.GetWorkerByID(ctx, workerID)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				logger.Errorw(ctx, apperrors.ErrNoWorkerExists, zap.Error(err), zap.String("ID", id))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrNoWorkerExists, id)
-				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
-				return
-			}
-			logger.Errorw(ctx, apperrors.ErrFetchFromDb, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFailedToFetchWorker, apperrors.ErrFetchFromDb, id)
+			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDb, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}

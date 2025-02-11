@@ -11,21 +11,21 @@ const (
 )
 
 type Worker struct {
-	ID              int
-	Name            string
-	ContactNumber   string
-	Email           string
-	Gender          Gender
-	Password        string
-	Sectors         string
-	Skills          string
-	Location        *int
-	IsAvailable     *bool
-	Rating          *float64
-	TotalJobsWorked *int
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	Language        string
+	ID              int       `db:"id"`
+	Name            string    `db:"name"`
+	ContactNumber   string    `db:"contact_number"`
+	Email           string    `db:"email"`
+	Gender          Gender    `db:"gender"`
+	Password        string    `db:"password"`
+	Sectors         string    `db:"sectors"`
+	Skills          string    `db:"skills"`
+	Location        *int      `db:"location"`
+	IsAvailable     bool      `db:"is_available"`
+	Rating          float64   `db:"rating"`
+	TotalJobsWorked int       `db:"total_jobs_worked"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	Language        string    `db:"language"`
 }
 
 type EmployerType string
@@ -43,10 +43,10 @@ type Employer struct {
 	Type         EmployerType
 	Password     string
 	Sectors      string
-	Location     *int
+	Location     int
 	IsVerified   bool
-	Rating       *float64
-	WorkersHired *int
+	Rating       float64
+	WorkersHired int
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Language     string
