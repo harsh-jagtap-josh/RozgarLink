@@ -2,7 +2,7 @@ package logger
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"go.uber.org/zap"
 )
@@ -27,7 +27,7 @@ func getLogger() (logger *zap.Logger) {
 
 	logger, err := config.Build()
 	if err != nil {
-		fmt.Printf("failed to initialize logger %v", err)
+		log.Printf("failed to initialize logger %v", err)
 		return nil
 	}
 	return logger
