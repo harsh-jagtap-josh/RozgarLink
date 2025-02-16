@@ -77,6 +77,12 @@ func HandleLogin(authService Service) func(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		middleware.HandleSuccessResponse(ctx, w, "successfully logged in "+resp.User.Role, http.StatusCreated, resp)
+		if resp.Token == "" {
+			logger.Errorw(ctx, apperrors.ErrInvalidLoginCredentials.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrInvalidLoginCredentials.Error(), http.StatusBadRequest)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully logged in "+resp.User.Role, http.StatusOK, resp)
 	}
 }
