@@ -2,17 +2,19 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
 // PostgreSQL Queries
 const (
-	createAddressQuery          = `INSERT INTO address (details, street, city, state, pincode) VALUES (:details, :street, :city, :state, :pincode) RETURNING *`
-	updateAddressQuery          = "UPDATE address SET details=:details, street=:street, city=:city, state=:state, pincode=:pincode WHERE id=:id RETURNING *;"
-	fetchAddressByIdQuery       = "SELECT * FROM address where id=$1;"
-	fetchAddressByWorkerIdQuery = "SELECT address.* FROM address inner join workers on address.id = workers.location where workers.id=$1;"
-	deleteAddressByIdQuery      = "DELETE FROM address WHERE id=$1;"
+	createAddressQuery            = `INSERT INTO address (details, street, city, state, pincode) VALUES (:details, :street, :city, :state, :pincode) RETURNING *`
+	updateAddressQuery            = "UPDATE address SET details=:details, street=:street, city=:city, state=:state, pincode=:pincode WHERE id=:id RETURNING *;"
+	fetchAddressByIdQuery         = "SELECT * FROM address where id=$1;"
+	fetchAddressByWorkerIdQuery   = "SELECT address.* FROM address inner join workers on address.id = workers.location where workers.id=$1;"
+	fetchAddressByEmployerIdQuery = "SELECT address.* FROM address inner join employers on address.id = employers.location where employers.id=$1;"
+	deleteAddressByIdQuery        = "DELETE FROM address WHERE id=$1;"
 )
 
 // create a new address and return newly created address object, and error
@@ -80,13 +82,25 @@ func GetAddressById(ctx context.Context, sqlxDb *sqlx.DB, addressId int) (Addres
 }
 
 // fetch address by worker id
-func GetAddressByWorkerId(ctx context.Context, sqlxDb *sqlx.DB, addressId int) (Address, error) {
+func GetAddressByWorkerId(ctx context.Context, sqlxDb *sqlx.DB, workerId int) (Address, error) {
 	var address Address
 
-	err := sqlxDb.Get(&address, fetchAddressByWorkerIdQuery, addressId)
+	err := sqlxDb.Get(&address, fetchAddressByWorkerIdQuery, workerId)
 
 	if err != nil {
-		return Address{}, nil
+		fmt.Println(err.Error())
+		return Address{}, err
+	}
+	return address, nil
+}
+
+func GetAddressByEmployerId(ctx context.Context, sqlxDb *sqlx.DB, employerId int) (Address, error) {
+	var address Address
+
+	err := sqlxDb.Get(&address, fetchAddressByWorkerIdQuery, employerId)
+
+	if err != nil {
+		return Address{}, err
 	}
 
 	return address, nil

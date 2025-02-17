@@ -21,7 +21,7 @@ type Address struct {
 type Employer struct {
 	ID           int          `json:"id"`
 	Name         string       `json:"name"`
-	ContactNo    string       `json:"contact_no"`
+	ContactNo    string       `json:"contact_number"`
 	Email        string       `json:"email"`
 	Type         EmployerType `json:"type"`
 	Password     string       `json:"password,omitempty"`
@@ -38,7 +38,7 @@ type Employer struct {
 type EmployerServiceStruct struct {
 	ID           int          `json:"id"`
 	Name         string       `json:"name"`
-	ContactNo    string       `json:"contact_no"`
+	ContactNo    string       `json:"contact_number"`
 	Email        string       `json:"email"`
 	Type         EmployerType `json:"type"`
 	Password     string       `json:"password"`

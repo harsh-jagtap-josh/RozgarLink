@@ -69,7 +69,7 @@ func (ws *service) CreateWorker(ctx context.Context, workerData WorkerRequest) (
 func (ws *service) UpdateWorkerByID(ctx context.Context, workerData WorkerRequest) (WorkerRequest, error, error) {
 
 	// validate all user fields in update same as register- can also be done in frontend itself
-	errType, err := utils.ValidateUser(workerData.Name, workerData.ContactNumber, workerData.Email, workerData.Password)
+	errType, err := utils.ValidateUpdateUser(workerData.Name, workerData.ContactNumber, workerData.Email)
 	if err != nil {
 		return WorkerRequest{}, err, errType
 	}

@@ -26,3 +26,26 @@ func MapRepoToServiceDomain(employer repo.EmployerResponse) Employer {
 		Language:     employer.Language,
 	}
 }
+
+func MapServiceToRepoDomain(employer Employer) repo.EmployerResponse {
+	return repo.EmployerResponse{
+		ID:           employer.ID,
+		Name:         employer.Name,
+		ContactNo:    employer.ContactNo,
+		Email:        employer.Email,
+		Type:         repo.EmployerType(employer.Type),
+		Sectors:      employer.Sectors,
+		Location:     employer.Location.ID,
+		IsVerified:   employer.IsVerified,
+		Rating:       employer.Rating,
+		WorkersHired: employer.WorkersHired,
+		CreatedAt:    employer.CreatedAt,
+		UpdatedAt:    employer.UpdatedAt,
+		Language:     employer.Language,
+		Details:      employer.Location.Details,
+		Street:       employer.Location.Street,
+		City:         employer.Location.City,
+		State:        employer.Location.State,
+		Pincode:      employer.Location.Pincode,
+	}
+}

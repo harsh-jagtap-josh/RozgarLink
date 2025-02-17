@@ -61,3 +61,16 @@ func ValidateUser(name, mobile, email, password string) (error, error) {
 	}
 	return nil, nil
 }
+
+func ValidateUpdateUser(name, mobile, email string) (error, error) {
+	if err := ValidateName(name); err != nil {
+		return apperrors.ErrInvalidUserDetails, err
+	}
+	if err := ValidateMobileNumber(mobile); err != nil {
+		return apperrors.ErrInvalidUserDetails, err
+	}
+	if err := ValidateEmail(email); err != nil {
+		return apperrors.ErrInvalidUserDetails, err
+	}
+	return nil, nil
+}

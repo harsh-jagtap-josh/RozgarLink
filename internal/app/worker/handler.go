@@ -47,7 +47,7 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func UpdateWorkeByID(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var workerData WorkerRequest
@@ -87,7 +87,7 @@ func UpdateWorkeByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func DeleteWorkeByID(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+func DeleteWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

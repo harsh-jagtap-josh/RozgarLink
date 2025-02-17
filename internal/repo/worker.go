@@ -109,7 +109,7 @@ func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerRe
 	if err != nil {
 		return WorkerResponse{}, err
 	}
-	isAddressChanged := !MatchAddress(address, workerData)
+	isAddressChanged := !MatchAddressWorker(address, workerData)
 	var updAddress Address
 	if isAddressChanged {
 		updAddress, err = UpdateAddress(ctx, db, Address{

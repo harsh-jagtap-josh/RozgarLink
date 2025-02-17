@@ -80,7 +80,7 @@ type Employer struct {
 type EmployerResponse struct {
 	ID           int          `db:"id"`
 	Name         string       `db:"name"`
-	ContactNo    string       `db:"contact_no"`
+	ContactNo    string       `db:"contact_number"`
 	Email        string       `db:"email"`
 	Type         EmployerType `db:"type"`
 	Password     string       `db:"password"`

@@ -1,6 +1,7 @@
 package employer
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -42,22 +43,45 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 			return
 		}
 		middleware.HandleSuccessResponse(ctx, w, "employer details retrieved successfully", http.StatusOK, employer)
+	}
+}
 
-		// response, err := workerSvc.FetchWorkerByID(ctx, workerID)
-		// if err != nil {
-		// 	if errors.Is(err, apperrors.ErrNoWorkerExists) {
-		// 		logger.Errorw(ctx, apperrors.ErrNoWorkerExists.Error(), zap.Error(err), zap.String("ID", id))
-		// 		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.ErrNoWorkerExists.Error(), id)
-		// 		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
-		// 		return
-		// 	}
+func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		// 	logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
-		// 	httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDb, id)
-		// 	middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
-		// 	return
-		// }
+		ctx := r.Context()
 
-		// middleware.HandleSuccessResponse(ctx, w, "worker details retrieved successfully", http.StatusOK, response)
+		vars := mux.Vars(r)
+		id := vars["employer_id"]
+		_, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		var employerData Employer
+
+		err = json.NewDecoder(r.Body).Decode(&employerData)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response, err, errType := employerSvc.UpdateEmployerById(ctx, employerData)
+		if err != nil {
+			if errors.Is(errType, apperrors.ErrInvalidUserDetails) {
+				logger.Errorw(ctx, apperrors.ErrInvalidUserDetails.Error(), zap.Error(err))
+				http.Error(w, apperrors.ErrInvalidUserDetails.Error()+", "+err.Error(), http.StatusBadRequest)
+				return
+			}
+			logger.Errorw(ctx, apperrors.ErrUpdateEmployer.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrUpdateEmployer.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully updated employer details", http.StatusOK, response)
 	}
 }

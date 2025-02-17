@@ -27,12 +27,13 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// workerRouter.Use(middleware.ValidateJWT) // validate JWT token
 	workerRouter.HandleFunc(workerIdParam, worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
 	// workerRouter.Use(middleware.RequireSameUserOrAdmin) // only worker with same ID has access to or admin
-	workerRouter.HandleFunc(workerIdParam, worker.UpdateWorkeByID(deps.WorkerService)).Methods(http.MethodPut)
-	workerRouter.HandleFunc(workerIdParam, worker.DeleteWorkeByID(deps.WorkerService)).Methods(http.MethodDelete)
+	workerRouter.HandleFunc(workerIdParam, worker.UpdateWorkerByID(deps.WorkerService)).Methods(http.MethodPut)
+	workerRouter.HandleFunc(workerIdParam, worker.DeleteWorkerByID(deps.WorkerService)).Methods(http.MethodDelete)
 
 	// Employer Routes
 	employerRouter := router.PathPrefix("/employers").Subrouter()
 	employerRouter.HandleFunc(employerIdParam, employer.FetchEmployerByID(deps.EmployerService)).Methods(http.MethodGet)
+	employerRouter.HandleFunc(employerIdParam, employer.UpdateEmployerById(deps.EmployerService)).Methods(http.MethodPut)
 
 	return router
 }
