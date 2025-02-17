@@ -31,7 +31,6 @@ var (
 	ErrUpdateEmployer        = errors.New("failed to update employer data")
 	ErrDeleteEmployer        = errors.New("failed to delete employer data")
 	ErrEmployerAlreadyExists = errors.New("employer with same email already exists")
-
 	// Login Errors
 
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")

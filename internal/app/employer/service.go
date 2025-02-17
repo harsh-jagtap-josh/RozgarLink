@@ -16,6 +16,7 @@ type Service interface {
 	FetchEmployerByID(ctx context.Context, employerId int) (Employer, error)
 	UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error, error)
 	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error, error)
+	DeleteEmployerById(ctx context.Context, employerId int) (int, error)
 }
 
 func NewService(employerRepo repo.EmployerStorer) Service {
@@ -87,4 +88,18 @@ func (empS *service) RegisterEmployer(ctx context.Context, employerData Employer
 
 	newEmployer := MapRepoToServiceDomain(employer)
 	return newEmployer, nil, nil
+}
+
+func (empS *service) DeleteEmployerById(ctx context.Context, employerId int) (int, error) {
+	exists := empS.employerRepo.FindEmployerById(ctx, employerId)
+	if !exists {
+		return -1, apperrors.ErrNoEmployerExists
+	}
+
+	id, err := empS.employerRepo.DeleteEmployerByID(ctx, employerId)
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
 }

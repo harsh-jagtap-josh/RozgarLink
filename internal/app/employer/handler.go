@@ -46,6 +46,7 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 	}
 }
 
+// update employer based on provided details, that also contains employer id and address id.
 func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -119,5 +120,38 @@ func RegisterEmployer(employerSvc Service) func(w http.ResponseWriter, r *http.R
 		}
 
 		middleware.HandleSuccessResponse(ctx, w, "successfully created employer details", http.StatusOK, employer)
+	}
+}
+
+func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		ctx := r.Context()
+
+		vars := mux.Vars(r)
+		id := vars["employer_id"]
+		employerID, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		_, err = employerSvc.DeleteEmployerById(ctx, employerID)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoEmployerExists) {
+				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteEmployer.Error(), apperrors.ErrNoWorkerExists.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.ErrDeleteEmployer.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrDeleteEmployer.Error()+","+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }

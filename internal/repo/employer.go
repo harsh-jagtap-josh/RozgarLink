@@ -13,7 +13,9 @@ type EmployerStorer interface {
 	RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
 	FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error)
 	UpdateEmployerById(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
+	DeleteEmployerByID(ctx context.Context, employerId int) (int, error)
 	FindEmployerByEmail(ctx context.Context, employerEmail string) bool
+	FindEmployerById(ctx context.Context, employerId int) bool
 }
 
 type employerStore struct {
@@ -128,9 +130,35 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 	return employerUpdated, nil
 }
 
+func (es *employerStore) DeleteEmployerByID(ctx context.Context, employerId int) (int, error) {
+	query := `DELETE from employers where id=$1 RETURNING location;`
+
+	db := sqlx.NewDb(es.DB, "postgres")
+	var addressId int
+
+	err := db.Get(&addressId, query, employerId)
+
+	if err != nil {
+		return -1, err
+	}
+
+	err = DeleteAddress(ctx, db, addressId)
+	if err != nil {
+		return -1, err
+	}
+	return employerId, nil
+}
+
 func (es *employerStore) FindEmployerByEmail(ctx context.Context, employerEmail string) bool {
 	var ID int
 	query := `SELECT id from employers where email=$1;`
 	err := es.BaseRepository.DB.QueryRow(query, employerEmail).Scan(&ID)
+	return err == nil
+}
+
+func (es *employerStore) FindEmployerById(ctx context.Context, employerId int) bool {
+	var ID int
+	query := `SELECT id from employers where id=$1;`
+	err := es.BaseRepository.DB.QueryRow(query, employerId).Scan(&ID)
 	return err == nil
 }
