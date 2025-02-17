@@ -33,9 +33,11 @@ var (
 	ErrEmployerAlreadyExists = errors.New("employer with same email already exists")
 
 	// Job Errors
-	ErrCreateJob = errors.New("failed to create job")
-	ErrUpdateJob = errors.New("failed to update job data")
-	ErrDeleteJob = errors.New("failed to delete job data")
+	ErrCreateJob   = errors.New("failed to create job")
+	ErrUpdateJob   = errors.New("failed to update job data")
+	ErrDeleteJob   = errors.New("failed to delete job data")
+	ErrFetchJob    = errors.New("failed to fetch job data")
+	ErrNoJobExists = errors.New("no job found with id")
 
 	// Login Errors
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")

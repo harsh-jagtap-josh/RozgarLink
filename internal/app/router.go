@@ -13,6 +13,7 @@ import (
 // Query Params
 const workerIdParam = "/{worker_id}"
 const employerIdParam = "/{employer_id}"
+const jobIdParam = "/{job_id}"
 
 func NewRouter(deps Dependencies) *mux.Router {
 
@@ -40,6 +41,9 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// Job Routes
 	jobRouter := router.PathPrefix("/job").Subrouter()
 	jobRouter.HandleFunc("/create", job.CreateJob(deps.JobService)).Methods(http.MethodPost)
-	jobRouter.HandleFunc("/{job_id}", job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
+	jobRouter.HandleFunc(jobIdParam, job.FetchJobByID(deps.JobService)).Methods(http.MethodGet) // update the handler function name
+	jobRouter.HandleFunc(jobIdParam, job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
+	jobRouter.HandleFunc(jobIdParam, job.DeleteJobByID(deps.JobService)).Methods(http.MethodDelete)
+
 	return router
 }

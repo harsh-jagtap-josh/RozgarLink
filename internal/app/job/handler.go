@@ -2,6 +2,7 @@ package job
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -41,19 +42,20 @@ func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		vars := mux.Vars(r)
 		id := vars["job_id"]
-		_, err := strconv.Atoi(id)
+		jobId, err := strconv.Atoi(id)
 		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
+			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateJob.Error(), apperrors.MsgInvalidJobId, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 			return
 		}
 
 		var jobData Job
+		jobData.ID = jobId
 		err = json.NewDecoder(r.Body).Decode(&jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+", "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -65,5 +67,67 @@ func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		middleware.HandleSuccessResponse(ctx, w, "successfully updated job details", http.StatusOK, updatedJob)
+	}
+}
+
+func FetchJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		vars := mux.Vars(r)
+		id := vars["job_id"]
+		jobId, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchJob.Error(), apperrors.MsgInvalidJobId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		job, err := js.FetchJobByID(ctx, jobId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoJobExists) {
+				logger.Errorw(ctx, apperrors.ErrNoJobExists.Error(), zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.ErrNoJobExists.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.MsgFetchFromDb, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "job details retrieved successfully", http.StatusOK, job)
+	}
+}
+
+func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		vars := mux.Vars(r)
+		id := vars["job_id"]
+		jobId, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchJob.Error(), apperrors.MsgInvalidJobId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		_, err = js.DeleteJobByID(ctx, jobId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoJobExists) {
+				logger.Errorw(ctx, apperrors.ErrNoJobExists.Error(), zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.ErrNoJobExists.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
+				return
+			}
+			logger.Errorw(ctx, apperrors.ErrDeleteEmployer.Error(), zap.Error(err), zap.String("ID", id))
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrDeleteJob.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
