@@ -30,7 +30,7 @@ func NewWorkerRepo(db *sql.DB) WorkerStorer {
 
 // PostgreSQL Queries
 const (
-	fetchWorkerByIDQuery  = `SELECT workers.id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language from workers inner join address on workers.location = address.id where workers.id = $1;`
+	fetchWorkerByIDQuery  = `SELECT workers.*, address.details, address.street, address.city, address.state, address.pincode from workers inner join address on workers.location = address.id where workers.id = $1;`
 	createWorkerQuery     = `INSERT INTO Workers (name, contact_number, email, gender, password, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :gender, :password, :sectors, :skills, :location, :is_available, :rating, :total_jobs_worked, NOW(), NOW(), :language) RETURNING *;`
 	updateWorkerByIDQuery = `UPDATE Workers SET name=:name, contact_number=:contact_number, email=:email, gender=:gender, sectors=:sectors, skills=:skills, is_available=:is_available, rating=:rating, total_jobs_worked=:total_jobs_worked, updated_at=NOW(), language=:language WHERE id=:id RETURNING *;`
 	deleteWorkerByIdQuery = `DELETE FROM workers WHERE id=$1 RETURNING location;`
@@ -90,12 +90,6 @@ func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (Worke
 		return WorkerResponse{}, err
 	}
 
-	address, err := GetAddressById(ctx, db, worker.Location)
-	if err != nil {
-		return WorkerResponse{}, err
-	}
-
-	worker = MapAddressToWorker(worker, address)
 	return worker, nil
 }
 
