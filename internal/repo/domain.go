@@ -61,20 +61,42 @@ const (
 )
 
 type Employer struct {
-	ID           int
-	Name         string
-	ContactNo    string
-	Email        string
-	Type         EmployerType
-	Password     string
-	Sectors      string
-	Location     int
-	IsVerified   bool
-	Rating       float64
-	WorkersHired int
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	Language     string
+	ID           int          `db:"id"`
+	Name         string       `db:"name"`
+	ContactNo    string       `db:"contact_number"`
+	Email        string       `db:"email"`
+	Type         EmployerType `db:"type"`
+	Password     string       `db:"password"`
+	Sectors      string       `db:"sectors"`
+	Location     int          `db:"location"`
+	IsVerified   bool         `db:"is_verified"`
+	Rating       float64      `db:"rating"`
+	WorkersHired int          `db:"workers_hired"`
+	CreatedAt    time.Time    `db:"created_at"`
+	UpdatedAt    time.Time    `db:"updated_at"`
+	Language     string       `db:"language"`
+}
+
+type EmployerResponse struct {
+	ID           int          `db:"id"`
+	Name         string       `db:"name"`
+	ContactNo    string       `db:"contact_no"`
+	Email        string       `db:"email"`
+	Type         EmployerType `db:"type"`
+	Password     string       `db:"password"`
+	Sectors      string       `db:"sectors"`
+	Location     int          `db:"location"`
+	IsVerified   bool         `db:"is_verified"`
+	Rating       float64      `db:"rating"`
+	WorkersHired int          `db:"workers_hired"`
+	CreatedAt    time.Time    `db:"created_at"`
+	UpdatedAt    time.Time    `db:"updated_at"`
+	Language     string       `db:"language"`
+	Details      string       `db:"details"`
+	Street       string       `db:"street"`
+	City         string       `db:"city"`
+	State        string       `db:"state"`
+	Pincode      int          `db:"pincode"`
 }
 
 type Address struct {
