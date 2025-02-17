@@ -125,3 +125,42 @@ type LoginResponse struct {
 	Token string
 	User  LoginUserData
 }
+
+// Job Structs
+
+type Job struct {
+	ID              int       `db:"id"`
+	EmployerID      int       `db:"employer_id"`
+	Title           string    `db:"title"`
+	RequiredGender  string    `db:"required_gender"`
+	Description     string    `db:"description"`
+	DurationInHours int       `db:"duration_in_hours"`
+	SkillsRequired  string    `db:"skills_required"`
+	Sectors         string    `db:"sectors"`
+	Wage            int       `db:"wage"`
+	Vacancy         int       `db:"vacancy"`
+	Location        int       `db:"location"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+}
+
+type JobRepoStruct struct {
+	ID              int       `db:"id"`
+	EmployerID      int       `db:"employer_id"`
+	Title           string    `db:"title" `
+	RequiredGender  string    `db:"required_gender"`
+	Description     string    `db:"description"`
+	DurationInHours int       `db:"duration_in_hours"`
+	SkillsRequired  string    `db:"skills_required"`
+	Sectors         string    `db:"sectors"`
+	Wage            int       `db:"wage"`
+	Vacancy         int       `db:"vacancy"`
+	Location        int       `db:"location"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	Details         string    `db:"details"`
+	Street          string    `db:"street"`
+	City            string    `db:"city"`
+	State           string    `db:"state"`
+	Pincode         int       `db:"pincode"`
+}

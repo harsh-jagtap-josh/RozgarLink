@@ -31,8 +31,13 @@ var (
 	ErrUpdateEmployer        = errors.New("failed to update employer data")
 	ErrDeleteEmployer        = errors.New("failed to delete employer data")
 	ErrEmployerAlreadyExists = errors.New("employer with same email already exists")
-	// Login Errors
 
+	// Job Errors
+	ErrCreateJob = errors.New("failed to create job")
+	ErrUpdateJob = errors.New("failed to update job data")
+	ErrDeleteJob = errors.New("failed to delete job data")
+
+	// Login Errors
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")
 )
 
@@ -46,7 +51,10 @@ const MsgFailedToCreateWorker = "failed to create worker"
 // Employer Error Messages
 const MsgInvalidEmployerId = "invalid employer id provided"
 const MsgFailedToFetchEmp = "failed to fetch employer"
-const MsgFailedToCreateEmployer = "failed to create employer"
+
+// Job Error Messages
+const MsgInvalidJobId = "invalid job id provided"
+const MsgFailedToFetchJob = "failed to fetch job"
 
 func HttpErrorResponseMessage(warning, message string, id string) string {
 	return fmt.Sprintf("%s: %s, id: %v", warning, message, id)

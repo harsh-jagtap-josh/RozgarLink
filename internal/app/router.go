@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 )
 
@@ -36,5 +37,9 @@ func NewRouter(deps Dependencies) *mux.Router {
 	employerRouter.HandleFunc(employerIdParam, employer.UpdateEmployerById(deps.EmployerService)).Methods(http.MethodPut)
 	employerRouter.HandleFunc(employerIdParam, employer.DeleteEmployerByID(deps.EmployerService)).Methods(http.MethodDelete)
 
+	// Job Routes
+	jobRouter := router.PathPrefix("/job").Subrouter()
+	jobRouter.HandleFunc("/create", job.CreateJob(deps.JobService)).Methods(http.MethodPost)
+	jobRouter.HandleFunc("/{job_id}", job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
 	return router
 }

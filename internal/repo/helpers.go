@@ -24,6 +24,18 @@ func MapAddressToEmployer(employer EmployerResponse, address Address) EmployerRe
 	return employer
 }
 
+func MapAddressToJob(job JobRepoStruct, address Address) JobRepoStruct {
+	// Map all address fields to output worker object
+	job.Location = address.ID
+	job.Details = address.Details
+	job.Street = address.Street
+	job.City = address.City
+	job.State = address.State
+	job.Pincode = address.Pincode
+
+	return job
+}
+
 func MatchAddressWorker(address Address, worker WorkerResponse) bool {
 	if address.Details == worker.Details && address.Street == worker.Street && address.State == worker.State && address.City == worker.City && address.Pincode == worker.Pincode {
 		return true
@@ -33,6 +45,13 @@ func MatchAddressWorker(address Address, worker WorkerResponse) bool {
 
 func MatchAddressEmployer(address Address, employer EmployerResponse) bool {
 	if address.Details == employer.Details && address.Street == employer.Street && address.State == employer.State && address.City == employer.City && address.Pincode == employer.Pincode {
+		return true
+	}
+	return false
+}
+
+func MatchAddressJob(address Address, job JobRepoStruct) bool {
+	if address.Details == job.Details && address.Street == job.Street && address.State == job.State && address.City == job.City && address.Pincode == job.Pincode {
 		return true
 	}
 	return false

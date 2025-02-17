@@ -14,6 +14,7 @@ const (
 	fetchAddressByIdQuery         = "SELECT * FROM address where id=$1;"
 	fetchAddressByWorkerIdQuery   = "SELECT address.* FROM address inner join workers on address.id = workers.location where workers.id=$1;"
 	fetchAddressByEmployerIdQuery = "SELECT address.* FROM address inner join employers on address.id = employers.location where employers.id=$1;"
+	fetchAddressByJobIdQuery      = "SELECT address.* FROM address inner join jobs on address.id = jobs.location where jobs.id=$1;"
 	deleteAddressByIdQuery        = "DELETE FROM address WHERE id=$1;"
 )
 
@@ -98,6 +99,18 @@ func GetAddressByEmployerId(ctx context.Context, sqlxDb *sqlx.DB, employerId int
 	var address Address
 
 	err := sqlxDb.Get(&address, fetchAddressByWorkerIdQuery, employerId)
+
+	if err != nil {
+		return Address{}, err
+	}
+
+	return address, nil
+}
+
+func GetAddressByJobId(ctx context.Context, sqlxDb *sqlx.DB, jobId int) (Address, error) {
+	var address Address
+
+	err := sqlxDb.Get(&address, fetchAddressByJobIdQuery, jobId)
 
 	if err != nil {
 		return Address{}, err
