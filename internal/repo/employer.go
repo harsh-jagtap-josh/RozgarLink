@@ -10,8 +10,10 @@ import (
 )
 
 type EmployerStorer interface {
+	RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
 	FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error)
 	UpdateEmployerById(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
+	FindEmployerByEmail(ctx context.Context, employerEmail string) bool
 }
 
 type employerStore struct {
@@ -22,6 +24,44 @@ func NewEmployerRepo(db *sql.DB) EmployerStorer {
 	return &employerStore{
 		BaseRepository: BaseRepository{db},
 	}
+}
+
+func (es *employerStore) RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error) {
+	db := sqlx.NewDb(es.DB, "postgres")
+
+	var newEmployer EmployerResponse
+
+	addressData := Address{
+		Details: employerData.Details,
+		Street:  employerData.Street,
+		City:    employerData.City,
+		State:   employerData.State,
+	}
+
+	address, err := CreateAddress(ctx, db, addressData)
+	if err != nil {
+		return EmployerResponse{}, err
+	}
+
+	employerData.Location = address.ID
+
+	query := `INSERT INTO employers (name, contact_number, email, type, password, sectors, location, is_verified, rating, workers_hired, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :type, :password, :sectors, :location, :is_verified, :rating, :workers_hired, NOW(), NOW(), :language) RETURNING *;`
+
+	rows, err := db.NamedQuery(query, employerData)
+	if err != nil {
+		return EmployerResponse{}, err
+	}
+
+	defer rows.Close()
+
+	if rows.Next() {
+		err = rows.StructScan(&newEmployer)
+		if err != nil {
+			return EmployerResponse{}, err
+		}
+	}
+	newEmployer = MapAddressToEmployer(newEmployer, address)
+	return newEmployer, nil
 }
 
 func (es *employerStore) FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error) {
@@ -86,4 +126,11 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 	}
 
 	return employerUpdated, nil
+}
+
+func (es *employerStore) FindEmployerByEmail(ctx context.Context, employerEmail string) bool {
+	var ID int
+	query := `SELECT id from employers where email=$1;`
+	err := es.BaseRepository.DB.QueryRow(query, employerEmail).Scan(&ID)
+	return err == nil
 }

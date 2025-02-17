@@ -85,3 +85,39 @@ func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http
 		middleware.HandleSuccessResponse(ctx, w, "successfully updated employer details", http.StatusOK, response)
 	}
 }
+
+func RegisterEmployer(employerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		ctx := r.Context()
+		var employerData Employer
+
+		err := json.NewDecoder(r.Body).Decode(&employerData)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		employer, err, errType := employerSvc.RegisterEmployer(ctx, employerData)
+		if err != nil {
+			if errors.Is(errType, apperrors.ErrInvalidUserDetails) {
+				logger.Errorw(ctx, apperrors.ErrInvalidUserDetails.Error(), zap.Error(err))
+				http.Error(w, apperrors.ErrInvalidUserDetails.Error()+", "+err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			if errors.Is(errType, apperrors.ErrEmployerAlreadyExists) {
+				logger.Errorw(ctx, apperrors.ErrEmployerAlreadyExists.Error(), zap.Error(err), zap.String("email: ", employerData.Email))
+				http.Error(w, apperrors.ErrEmployerAlreadyExists.Error()+" - email: "+employerData.Email, http.StatusConflict)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.ErrCreateEmployer.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrCreateEmployer.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully created employer details", http.StatusOK, employer)
+	}
+}

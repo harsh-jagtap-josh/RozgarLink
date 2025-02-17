@@ -26,10 +26,11 @@ var (
 	ErrNoWorkerExists      = errors.New("no worker found with id")
 	ErrWorkerAlreadyExists = errors.New("worker with same email already exists")
 
-	ErrNoEmployerExists = errors.New("no employer found with id")
-	ErrCreateEmployer   = errors.New("failed to create employer")
-	ErrUpdateEmployer   = errors.New("failed to update employer data")
-	ErrDeleteEmployer   = errors.New("failed to delete employer data")
+	ErrNoEmployerExists      = errors.New("no employer found with id")
+	ErrCreateEmployer        = errors.New("failed to create employer")
+	ErrUpdateEmployer        = errors.New("failed to update employer data")
+	ErrDeleteEmployer        = errors.New("failed to delete employer data")
+	ErrEmployerAlreadyExists = errors.New("employer with same email already exists")
 
 	// Login Errors
 

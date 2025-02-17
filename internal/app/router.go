@@ -20,7 +20,7 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// Auth Routes
 	router.HandleFunc("/login", auth.HandleLogin(deps.AuthService)).Methods(http.MethodPost)
 	router.HandleFunc("/register/worker", auth.RegisterWorker(deps.WorkerService)).Methods(http.MethodPost)
-	router.HandleFunc("/register/employer", auth.RegisterWorker(deps.WorkerService)).Methods(http.MethodPost)
+	router.HandleFunc("/register/employer", employer.RegisterEmployer(deps.EmployerService)).Methods(http.MethodPost)
 
 	// Worker Routes - protected routes
 	workerRouter := router.PathPrefix("/workers").Subrouter()
