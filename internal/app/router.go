@@ -52,7 +52,9 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// Application Routes
 	applicationRouter := router.PathPrefix("/application").Subrouter()
 	applicationRouter.HandleFunc("/create", application.CreateNewApplication(deps.ApplicationService)).Methods(http.MethodPost)
+	applicationRouter.HandleFunc(applicationIdParam, application.FetchApplicationByID(deps.ApplicationService)).Methods(http.MethodGet)
+	applicationRouter.HandleFunc(applicationIdParam, application.UpdateApplicationByID(deps.ApplicationService)).Methods(http.MethodPut)
+	applicationRouter.HandleFunc(applicationIdParam, application.DeleteApplicationByID(deps.ApplicationService)).Methods(http.MethodDelete)
 
-	// applicationRouter.HandleFunc(employerIdParam, application.CreateNewApplication(deps.ApplicationService)).Methods(http.MethodPost)
 	return router
 }

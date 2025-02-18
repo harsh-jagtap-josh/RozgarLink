@@ -27,6 +27,15 @@ func NewApplicationRepo(db *sql.DB) ApplicationStorer {
 	}
 }
 
+// PostgreSQL Queries
+const (
+	createApplicationQuery     = `INSERT INTO applications (job_id, worker_id, status, expected_wage, mode_of_arrival, pick_up_location, worker_comments, applied_at, updated_at) VALUES (:job_id, :worker_id, :status, :expected_wage, :mode_of_arrival, :pick_up_location, :worker_comments, NOW(), NOW()) RETURNING *;`
+	updateApplicationByIdQuery = `UPDATE applications SET status=:status, expected_wage=:expected_wage, mode_of_arrival=:mode_of_arrival, pick_up_location=:pick_up_location, worker_comments=:worker_comments, updated_at=NOW() where id=:id RETURNING *;`
+	fethcApplicationByIdQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
+	deleteApplicationByIdQuery = `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
+	findApplicationByIdQuery   = `SELECT id FROM applications WHERE id = $1;`
+)
+
 func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicationData Application) (Application, error) {
 	db := sqlx.NewDb(appS.DB, "postgres")
 
@@ -46,10 +55,7 @@ func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicat
 
 	applicationData.PickUpLocation = address.ID
 
-	query := `INSERT INTO applications (job_id, worker_id, status, expected_wage, mode_of_arrival, pick_up_location, worker_comments, applied_at, updated_at) 
-								VALUES (:job_id, :worker_id, :status, :expected_wage, :mode_of_arrival, :pick_up_location, :worker_comments, NOW(), NOW()) RETURNING *;`
-
-	rows, err := db.NamedQuery(query, applicationData)
+	rows, err := db.NamedQuery(createApplicationQuery, applicationData)
 	if err != nil {
 		return Application{}, err
 	}
@@ -92,9 +98,7 @@ func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applica
 		}
 	}
 
-	query := `UPDATE applications SET status=:status, expected_wage=:expected_wage, mode_of_arrival=:mode_of_arrival, pick_up_location=:pick_up_location, worker_comments=:worker_comments, updated_at=NOW() where id=:id RETURNING *;`
-
-	rows, err := db.NamedQuery(query, applicationData)
+	rows, err := db.NamedQuery(updateApplicationByIdQuery, applicationData)
 	if err != nil {
 		return Application{}, err
 	}
@@ -117,13 +121,12 @@ func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applica
 }
 
 func (appS *applicationStore) FetchApplicationByID(ctx context.Context, applicationId int) (Application, error) {
-	query := `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
 
 	db := sqlx.NewDb(appS.DB, "postgres")
 
 	var application Application
 
-	err := db.Get(&application, query, applicationId)
+	err := db.Get(&application, fethcApplicationByIdQuery, applicationId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Application{}, apperrors.ErrNoApplicationExists
@@ -135,11 +138,10 @@ func (appS *applicationStore) FetchApplicationByID(ctx context.Context, applicat
 }
 
 func (appS *applicationStore) DeleteApplicationByID(ctx context.Context, applicationId int) (int, error) {
-	query := `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
 	db := sqlx.NewDb(appS.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&applicationId, query, addressId)
+	err := db.Get(&applicationId, deleteApplicationByIdQuery, addressId)
 
 	if err != nil {
 		return -1, err
@@ -154,8 +156,7 @@ func (appS *applicationStore) DeleteApplicationByID(ctx context.Context, applica
 }
 
 func (appS *applicationStore) FindApplicationById(ctx context.Context, applicationId int) bool {
-	query := `SELECT id FROM applications WHERE id = $1;`
 	var ID int
-	err := appS.BaseRepository.DB.QueryRow(query, applicationId).Scan(&ID)
+	err := appS.BaseRepository.DB.QueryRow(findApplicationByIdQuery, applicationId).Scan(&ID)
 	return err == nil
 }
