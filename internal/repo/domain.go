@@ -164,3 +164,32 @@ type JobRepoStruct struct {
 	State           string    `db:"state"`
 	Pincode         int       `db:"pincode"`
 }
+
+type Status string
+type ModeOfArrival string
+
+const (
+	Pending     Status        = "pending"
+	Shortlisted Status        = "shortlisted"
+	Confirmed   Status        = "confirmed"
+	Personal    ModeOfArrival = "personal"
+	PickUp      ModeOfArrival = "pickup"
+)
+
+type Application struct {
+	ID             int           `db:"id"`
+	JobID          int           `db:"job_id"`
+	WorkerID       int           `db:"worker_id"`
+	Status         Status        `db:"status"`
+	ExpectedWage   int           `db:"expected_wage"`
+	ModeOfArrival  ModeOfArrival `db:"mode_of_arrival"`
+	PickUpLocation int           `db:"pick_up_location"`
+	WorkerComment  string        `db:"worker_comments"`
+	AppliedAt      time.Time     `db:"applied_at"`
+	UpdatedAt      time.Time     `db:"updated_at"`
+	Details        string        `db:"details"`
+	Street         string        `db:"street"`
+	City           string        `db:"city"`
+	State          string        `db:"state"`
+	Pincode        int           `db:"pincode"`
+}

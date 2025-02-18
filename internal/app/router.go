@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
@@ -11,9 +12,12 @@ import (
 )
 
 // Query Params
-const workerIdParam = "/{worker_id}"
-const employerIdParam = "/{employer_id}"
-const jobIdParam = "/{job_id}"
+const (
+	workerIdParam      = "/{worker_id}"
+	employerIdParam    = "/{employer_id}"
+	jobIdParam         = "/{job_id}"
+	applicationIdParam = "/{application_id}"
+)
 
 func NewRouter(deps Dependencies) *mux.Router {
 
@@ -45,5 +49,10 @@ func NewRouter(deps Dependencies) *mux.Router {
 	jobRouter.HandleFunc(jobIdParam, job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
 	jobRouter.HandleFunc(jobIdParam, job.DeleteJobByID(deps.JobService)).Methods(http.MethodDelete)
 
+	// Application Routes
+	applicationRouter := router.PathPrefix("/application").Subrouter()
+	applicationRouter.HandleFunc("/create", application.CreateNewApplication(deps.ApplicationService)).Methods(http.MethodPost)
+
+	// applicationRouter.HandleFunc(employerIdParam, application.CreateNewApplication(deps.ApplicationService)).Methods(http.MethodPost)
 	return router
 }

@@ -42,7 +42,7 @@ func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		vars := mux.Vars(r)
 		id := vars["job_id"]
-		jobId, err := strconv.Atoi(id)
+		_, err := strconv.Atoi(id)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateJob.Error(), apperrors.MsgInvalidJobId, id)
@@ -51,7 +51,6 @@ func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var jobData Job
-		jobData.ID = jobId
 		err = json.NewDecoder(r.Body).Decode(&jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
@@ -123,7 +122,7 @@ func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
 				return
 			}
-			logger.Errorw(ctx, apperrors.ErrDeleteEmployer.Error(), zap.Error(err), zap.String("ID", id))
+			logger.Errorw(ctx, apperrors.ErrDeleteJob.Error(), zap.Error(err), zap.String("ID", id))
 			middleware.HandleErrorResponse(ctx, w, apperrors.ErrDeleteJob.Error()+", "+err.Error(), http.StatusInternalServerError)
 			return
 		}

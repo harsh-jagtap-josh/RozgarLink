@@ -39,6 +39,13 @@ var (
 	ErrFetchJob    = errors.New("failed to fetch job data")
 	ErrNoJobExists = errors.New("no job found with id")
 
+	// Application Errrors
+	ErrCreateApplication   = errors.New("failed to create application")
+	ErrUpdateApplication   = errors.New("failed to update application data")
+	ErrDeleteApplication   = errors.New("failed to delete application data")
+	ErrFetchApplication    = errors.New("failed to fetch application data")
+	ErrNoApplicationExists = errors.New("no application found with id")
+
 	// Login Errors
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")
 )
@@ -57,6 +64,9 @@ const MsgFailedToFetchEmp = "failed to fetch employer"
 // Job Error Messages
 const MsgInvalidJobId = "invalid job id provided"
 const MsgFailedToFetchJob = "failed to fetch job"
+
+const MsgInvalidApplicationId = "invalid application id provided"
+const MsgFailedToFetchApplication = "failed to fetch application"
 
 func HttpErrorResponseMessage(warning, message string, id string) string {
 	return fmt.Sprintf("%s: %s, id: %v", warning, message, id)
