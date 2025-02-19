@@ -7,6 +7,7 @@ import (
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/sector"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
@@ -17,6 +18,7 @@ type Dependencies struct {
 	EmployerService    employer.Service
 	JobService         job.Service
 	ApplicationService application.Service
+	SectorService      sector.Service
 }
 
 func NewServices(db *sql.DB) Dependencies {
@@ -25,12 +27,14 @@ func NewServices(db *sql.DB) Dependencies {
 	EmployerRepo := repo.NewEmployerRepo(db)
 	JobRepo := repo.NewJobRepo(db)
 	ApplicationRepo := repo.NewApplicationRepo(db)
+	SectorRepo := repo.NewSectorRepo(db)
 
 	workerService := worker.NewService(WorkerRepo)
 	authService := auth.NewService(AuthRepo)
 	employerService := employer.NewService(EmployerRepo)
 	jobService := job.NewService(JobRepo)
 	applicationService := application.NewService(ApplicationRepo)
+	sectorService := sector.NewService(SectorRepo)
 
 	return Dependencies{
 		WorkerService:      workerService,
@@ -38,5 +42,6 @@ func NewServices(db *sql.DB) Dependencies {
 		EmployerService:    employerService,
 		JobService:         jobService,
 		ApplicationService: applicationService,
+		SectorService:      sectorService,
 	}
 }

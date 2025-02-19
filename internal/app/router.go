@@ -8,6 +8,7 @@ import (
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/sector"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 )
 
@@ -17,6 +18,7 @@ const (
 	employerIdParam    = "/{employer_id}"
 	jobIdParam         = "/{job_id}"
 	applicationIdParam = "/{application_id}"
+	sectorIdParam      = "/{sector_id}"
 )
 
 func NewRouter(deps Dependencies) *mux.Router {
@@ -45,7 +47,7 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// Job Routes
 	jobRouter := router.PathPrefix("/job").Subrouter()
 	jobRouter.HandleFunc("/create", job.CreateJob(deps.JobService)).Methods(http.MethodPost)
-	jobRouter.HandleFunc(jobIdParam, job.FetchJobByID(deps.JobService)).Methods(http.MethodGet) // update the handler function name
+	jobRouter.HandleFunc(jobIdParam, job.FetchJobByID(deps.JobService)).Methods(http.MethodGet)
 	jobRouter.HandleFunc(jobIdParam, job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
 	jobRouter.HandleFunc(jobIdParam, job.DeleteJobByID(deps.JobService)).Methods(http.MethodDelete)
 
@@ -55,6 +57,14 @@ func NewRouter(deps Dependencies) *mux.Router {
 	applicationRouter.HandleFunc(applicationIdParam, application.FetchApplicationByID(deps.ApplicationService)).Methods(http.MethodGet)
 	applicationRouter.HandleFunc(applicationIdParam, application.UpdateApplicationByID(deps.ApplicationService)).Methods(http.MethodPut)
 	applicationRouter.HandleFunc(applicationIdParam, application.DeleteApplicationByID(deps.ApplicationService)).Methods(http.MethodDelete)
+
+	// Sectors Routes - Only Admin has access to all these routes
+	sectorRouter := router.PathPrefix("/sector").Subrouter()
+	sectorRouter.HandleFunc("/create", sector.CreateSector(deps.SectorService)).Methods(http.MethodPost)
+	sectorRouter.HandleFunc("/all", sector.FetchAllSectors(deps.SectorService)).Methods(http.MethodGet)
+	sectorRouter.HandleFunc(sectorIdParam, sector.FetchSectorById(deps.SectorService)).Methods(http.MethodGet)
+	sectorRouter.HandleFunc(sectorIdParam, sector.UpdateSectorById(deps.SectorService)).Methods(http.MethodPut)
+	sectorRouter.HandleFunc(sectorIdParam, sector.DeleteSectorById(deps.SectorService)).Methods(http.MethodDelete)
 
 	return router
 }

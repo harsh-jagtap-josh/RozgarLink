@@ -193,3 +193,9 @@ type Application struct {
 	State          string        `db:"state"`
 	Pincode        int           `db:"pincode"`
 }
+
+type Sector struct {
+	ID          int    `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+}

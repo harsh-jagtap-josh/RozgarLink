@@ -46,6 +46,13 @@ var (
 	ErrFetchApplication    = errors.New("failed to fetch application data")
 	ErrNoApplicationExists = errors.New("no application found with id")
 
+	// Sector Errors
+	ErrCreateSector   = errors.New("failed to create sector")
+	ErrUpdateSector   = errors.New("failed to update sector data")
+	ErrDeleteSector   = errors.New("failed to delete sector data")
+	ErrFetchSector    = errors.New("failed to fetch sector data")
+	ErrNoSectorExists = errors.New("no sector found with id")
+
 	// Login Errors
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")
 )
@@ -65,8 +72,13 @@ const MsgFailedToFetchEmp = "failed to fetch employer"
 const MsgInvalidJobId = "invalid job id provided"
 const MsgFailedToFetchJob = "failed to fetch job"
 
+// Applications Error Messages
 const MsgInvalidApplicationId = "invalid application id provided"
 const MsgFailedToFetchApplication = "failed to fetch application"
+
+// Sectors Error Messages
+const MsgInvalidSectorId = "invalid sector id provided"
+const MsgFailedToFetchSector = "failed to fetch sector"
 
 func HttpErrorResponseMessage(warning, message string, id string) string {
 	return fmt.Sprintf("%s: %s, id: %v", warning, message, id)

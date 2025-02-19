@@ -141,7 +141,7 @@ func (appS *applicationStore) DeleteApplicationByID(ctx context.Context, applica
 	db := sqlx.NewDb(appS.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&applicationId, deleteApplicationByIdQuery, addressId)
+	err := db.Get(&addressId, deleteApplicationByIdQuery, applicationId)
 
 	if err != nil {
 		return -1, err
