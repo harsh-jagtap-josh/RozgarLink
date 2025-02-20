@@ -21,7 +21,7 @@ type SectoreStorer interface {
 	FetchAllSectors(ctx context.Context) ([]Sector, error)
 }
 
-func NewSectorRepo(db *sql.DB) SectoreStorer {
+func NewSectorRepo(db *sqlx.DB) SectoreStorer {
 	return &sectorStore{
 		BaseRepository: BaseRepository{DB: db},
 	}
@@ -37,10 +37,9 @@ const (
 )
 
 func (sectorS *sectorStore) CreateNewSector(ctx context.Context, sectorData Sector) (Sector, error) {
-	db := sqlx.NewDb(sectorS.DB, "postgres")
 	var createdSector Sector
 
-	rows, err := db.NamedQuery(createNewSectorQuery, sectorData)
+	rows, err := sectorS.DB.NamedQuery(createNewSectorQuery, sectorData)
 	if err != nil {
 		return Sector{}, err
 	}
@@ -57,10 +56,9 @@ func (sectorS *sectorStore) CreateNewSector(ctx context.Context, sectorData Sect
 }
 
 func (sectorS *sectorStore) FetchSectorById(ctx context.Context, sectorId int) (Sector, error) {
-	db := sqlx.NewDb(sectorS.DB, "postgres")
 	var sector Sector
 
-	err := db.Get(&sector, fetchSectorByIdQuery, sectorId)
+	err := sectorS.DB.Get(&sector, fetchSectorByIdQuery, sectorId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Sector{}, apperrors.ErrNoSectorExists
@@ -73,11 +71,9 @@ func (sectorS *sectorStore) FetchSectorById(ctx context.Context, sectorId int) (
 
 func (sectorS *sectorStore) UpdateSectorById(ctx context.Context, sectorData Sector) (Sector, error) {
 
-	db := sqlx.NewDb(sectorS.DB, "postgres")
-
 	var sector Sector
 
-	rows, err := db.NamedQuery(updateSectorByIdQuery, sectorData)
+	rows, err := sectorS.DB.NamedQuery(updateSectorByIdQuery, sectorData)
 	if err != nil {
 		return Sector{}, err
 	}
@@ -96,11 +92,9 @@ func (sectorS *sectorStore) UpdateSectorById(ctx context.Context, sectorData Sec
 
 func (sectorS *sectorStore) DeleteSectorById(ctx context.Context, sectorId int) (int, error) {
 
-	db := sqlx.NewDb(sectorS.DB, "postgres")
-
 	var id int
 
-	err := db.Get(&id, deleteSectorByIdQuery, sectorId)
+	err := sectorS.DB.Get(&id, deleteSectorByIdQuery, sectorId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return -1, apperrors.ErrNoSectorExists
@@ -113,9 +107,8 @@ func (sectorS *sectorStore) DeleteSectorById(ctx context.Context, sectorId int) 
 
 func (sectorS *sectorStore) FetchAllSectors(ctx context.Context) ([]Sector, error) {
 	var sectors []Sector
-	db := sqlx.NewDb(sectorS.DB, "postgres")
 
-	err := db.Select(&sectors, fetchAllSectorQuery)
+	err := sectorS.DB.Select(&sectors, fetchAllSectorQuery)
 	if err != nil {
 		return []Sector{}, err
 	}

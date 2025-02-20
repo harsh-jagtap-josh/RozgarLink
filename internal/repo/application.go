@@ -19,9 +19,11 @@ type ApplicationStorer interface {
 	FetchApplicationByID(ctx context.Context, applicationId int) (Application, error)
 	DeleteApplicationByID(ctx context.Context, applicationId int) (int, error)
 	FindApplicationById(ctx context.Context, applicationId int) bool
+	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error)
+	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error)
 }
 
-func NewApplicationRepo(db *sql.DB) ApplicationStorer {
+func NewApplicationRepo(db *sqlx.DB) ApplicationStorer {
 	return &applicationStore{
 		BaseRepository: BaseRepository{DB: db},
 	}
@@ -37,7 +39,6 @@ const (
 )
 
 func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicationData Application) (Application, error) {
-	db := sqlx.NewDb(appS.DB, "postgres")
 
 	var createdApplication Application
 
@@ -48,14 +49,14 @@ func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicat
 		State:   applicationData.State,
 	}
 
-	address, err := CreateAddress(ctx, db, addressData)
+	address, err := CreateAddress(ctx, appS.DB, addressData)
 	if err != nil {
 		return Application{}, err
 	}
 
 	applicationData.PickUpLocation = address.ID
 
-	rows, err := db.NamedQuery(createApplicationQuery, applicationData)
+	rows, err := appS.DB.NamedQuery(createApplicationQuery, applicationData)
 	if err != nil {
 		return Application{}, err
 	}
@@ -73,19 +74,18 @@ func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicat
 }
 
 func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applicationData Application) (Application, error) {
-	db := sqlx.NewDb(appS.DB, "postgres")
 
 	var updatedApplication Application
 	var updatedAddress Address
 
-	address, err := GetAddressById(ctx, db, applicationData.PickUpLocation)
+	address, err := GetAddressById(ctx, appS.DB, applicationData.PickUpLocation)
 	if err != nil {
 		return Application{}, nil
 	}
 
 	isAddressChanged := !MatchAddressApplication(address, applicationData)
 	if isAddressChanged {
-		updatedAddress, err = UpdateAddress(ctx, db, Address{
+		updatedAddress, err = UpdateAddress(ctx, appS.DB, Address{
 			ID:      address.ID,
 			Details: applicationData.Details,
 			Street:  applicationData.Street,
@@ -98,7 +98,7 @@ func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applica
 		}
 	}
 
-	rows, err := db.NamedQuery(updateApplicationByIdQuery, applicationData)
+	rows, err := appS.DB.NamedQuery(updateApplicationByIdQuery, applicationData)
 	if err != nil {
 		return Application{}, err
 	}
@@ -122,11 +122,9 @@ func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applica
 
 func (appS *applicationStore) FetchApplicationByID(ctx context.Context, applicationId int) (Application, error) {
 
-	db := sqlx.NewDb(appS.DB, "postgres")
-
 	var application Application
 
-	err := db.Get(&application, fethcApplicationByIdQuery, applicationId)
+	err := appS.DB.Get(&application, fethcApplicationByIdQuery, applicationId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Application{}, apperrors.ErrNoApplicationExists
@@ -138,16 +136,15 @@ func (appS *applicationStore) FetchApplicationByID(ctx context.Context, applicat
 }
 
 func (appS *applicationStore) DeleteApplicationByID(ctx context.Context, applicationId int) (int, error) {
-	db := sqlx.NewDb(appS.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&addressId, deleteApplicationByIdQuery, applicationId)
+	err := appS.DB.Get(&addressId, deleteApplicationByIdQuery, applicationId)
 
 	if err != nil {
 		return -1, err
 	}
 
-	err = DeleteAddress(ctx, db, addressId)
+	err = DeleteAddress(ctx, appS.DB, addressId)
 	if err != nil {
 		return -1, err
 	}
@@ -157,6 +154,30 @@ func (appS *applicationStore) DeleteApplicationByID(ctx context.Context, applica
 
 func (appS *applicationStore) FindApplicationById(ctx context.Context, applicationId int) bool {
 	var ID int
-	err := appS.BaseRepository.DB.QueryRow(findApplicationByIdQuery, applicationId).Scan(&ID)
+	err := appS.DB.QueryRow(findApplicationByIdQuery, applicationId).Scan(&ID)
 	return err == nil
+}
+
+func (appS *applicationStore) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error) {
+	query := `SELECT * FROM applications WHERE job_id = $1`
+
+	var applications []Application
+
+	err := appS.DB.Select(&applications, query, jobId)
+	if err != nil {
+		return []Application{}, err
+	}
+	return applications, nil
+}
+
+func (appS *applicationStore) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error) {
+	query := `SELECT * FROM applications WHERE worker_id = $1`
+
+	var applications []Application
+
+	err := appS.DB.Select(&applications, query, workerId)
+	if err != nil {
+		return []Application{}, err
+	}
+	return applications, nil
 }

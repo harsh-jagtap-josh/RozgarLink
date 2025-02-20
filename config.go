@@ -2,11 +2,11 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/logger"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -19,7 +19,7 @@ type DbConfig struct {
 	dbname   string
 }
 
-func InitDB(ctx context.Context) (*sql.DB, error) {
+func InitDB(ctx context.Context) (*sqlx.DB, error) {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -40,7 +40,7 @@ func InitDB(ctx context.Context) (*sql.DB, error) {
 		dbConfig.host, dbConfig.port, dbConfig.user, dbConfig.password, dbConfig.dbname,
 	)
 
-	db, err := sql.Open("postgres", psqlconn)
+	db, err := sqlx.Open("postgres", psqlconn)
 	if err != nil {
 		logger.Errorw(ctx, "error occured initiating a database connection", zap.Error(err))
 		return nil, err

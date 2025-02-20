@@ -13,7 +13,7 @@ type jobStore struct {
 	BaseRepository
 }
 
-func NewJobRepo(db *sql.DB) JobStorer {
+func NewJobRepo(db *sqlx.DB) JobStorer {
 	return &jobStore{
 		BaseRepository: BaseRepository{
 			DB: db,
@@ -40,7 +40,6 @@ const (
 
 // Create New Job
 func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error) {
-	db := sqlx.NewDb(jobS.DB, "postgres")
 
 	var createdJob JobRepoStruct
 
@@ -51,14 +50,14 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (Job
 		State:   jobData.State,
 	}
 
-	address, err := CreateAddress(ctx, db, addressData)
+	address, err := CreateAddress(ctx, jobS.DB, addressData)
 	if err != nil {
 		return JobRepoStruct{}, err
 	}
 
 	jobData.Location = address.ID
 
-	rows, err := db.NamedQuery(createJobQuery, jobData)
+	rows, err := jobS.DB.NamedQuery(createJobQuery, jobData)
 	if err != nil {
 		return JobRepoStruct{}, err
 	}
@@ -77,19 +76,17 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (Job
 
 // Update Job
 func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error) {
-	db := sqlx.NewDb(jobS.DB, "postgres")
-
 	var updatedJob JobRepoStruct
 	var updatedAddress Address
 
-	address, err := GetAddressById(ctx, db, jobData.Location)
+	address, err := GetAddressById(ctx, jobS.DB, jobData.Location)
 	if err != nil {
 		return JobRepoStruct{}, nil
 	}
 
 	isAddressChanged := !MatchAddressJob(address, jobData)
 	if isAddressChanged {
-		updatedAddress, err = UpdateAddress(ctx, db, Address{
+		updatedAddress, err = UpdateAddress(ctx, jobS.DB, Address{
 			ID:      address.ID,
 			Details: jobData.Details,
 			Street:  jobData.Street,
@@ -102,7 +99,7 @@ func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) 
 		}
 	}
 
-	rows, err := db.NamedQuery(updateJobByIdQuery, jobData)
+	rows, err := jobS.DB.NamedQuery(updateJobByIdQuery, jobData)
 	if err != nil {
 		return JobRepoStruct{}, err
 	}
@@ -126,10 +123,9 @@ func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) 
 
 // Fetch Job Data by ID
 func (jobS *jobStore) FetchJobById(ctx context.Context, jobId int) (JobRepoStruct, error) {
-	db := sqlx.NewDb(jobS.DB, "postgres")
 
 	var job JobRepoStruct
-	err := db.Get(&job, fetchJobByIdQuery, jobId)
+	err := jobS.DB.Get(&job, fetchJobByIdQuery, jobId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return JobRepoStruct{}, apperrors.ErrNoJobExists
@@ -143,16 +139,15 @@ func (jobS *jobStore) FetchJobById(ctx context.Context, jobId int) (JobRepoStruc
 
 // Delete Job by ID
 func (jobS *jobStore) DeleteJobById(ctx context.Context, jobId int) (int, error) {
-	db := sqlx.NewDb(jobS.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&addressId, deleteJobByIdQuery, jobId)
+	err := jobS.DB.Get(&addressId, deleteJobByIdQuery, jobId)
 
 	if err != nil {
 		return -1, err
 	}
 
-	err = DeleteAddress(ctx, db, addressId)
+	err = DeleteAddress(ctx, jobS.DB, addressId)
 	if err != nil {
 		return -1, err
 	}

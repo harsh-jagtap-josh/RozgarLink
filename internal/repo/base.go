@@ -1,7 +1,7 @@
 package repo
 
-import "database/sql"
+import "github.com/jmoiron/sqlx"
 
 type BaseRepository struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }

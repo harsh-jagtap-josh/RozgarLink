@@ -1,8 +1,6 @@
 package app
 
 import (
-	"database/sql"
-
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
@@ -10,6 +8,7 @@ import (
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/sector"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
+	"github.com/jmoiron/sqlx"
 )
 
 type Dependencies struct {
@@ -21,7 +20,7 @@ type Dependencies struct {
 	SectorService      sector.Service
 }
 
-func NewServices(db *sql.DB) Dependencies {
+func NewServices(db *sqlx.DB) Dependencies {
 	AuthRepo := repo.NewAuthRepo(db)
 	WorkerRepo := repo.NewWorkerRepo(db)
 	EmployerRepo := repo.NewEmployerRepo(db)

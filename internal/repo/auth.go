@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/jmoiron/sqlx"
@@ -16,7 +15,7 @@ type AuthStorer interface {
 	Login(ctx context.Context, loginData LoginRequest) (LoginUserData, error)
 }
 
-func NewAuthRepo(db *sql.DB) AuthStorer {
+func NewAuthRepo(db *sqlx.DB) AuthStorer {
 	return &authStore{
 		BaseRepository: BaseRepository{db},
 	}
@@ -27,9 +26,8 @@ const FetchEmployerByEmailQuery = "SELECT id, name, email, password FROM employe
 
 func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (LoginUserData, error) {
 	var user LoginUserData
-	db := sqlx.NewDb(authS.DB, "postgres")
 
-	rows, err := db.NamedQuery(FetchWorkerByEmailQuery, loginData)
+	rows, err := authS.DB.NamedQuery(FetchWorkerByEmailQuery, loginData)
 	if err != nil {
 		return LoginUserData{}, err
 	} else {
@@ -44,7 +42,7 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 		}
 	}
 	if len(user.Email) == 0 {
-		rows, err = db.NamedQuery(FetchEmployerByEmailQuery, loginData)
+		rows, err = authS.DB.NamedQuery(FetchEmployerByEmailQuery, loginData)
 		if err != nil {
 			return LoginUserData{}, nil
 		} else {

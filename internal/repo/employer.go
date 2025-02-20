@@ -32,14 +32,13 @@ type employerStore struct {
 	BaseRepository
 }
 
-func NewEmployerRepo(db *sql.DB) EmployerStorer {
+func NewEmployerRepo(db *sqlx.DB) EmployerStorer {
 	return &employerStore{
 		BaseRepository: BaseRepository{db},
 	}
 }
 
 func (es *employerStore) RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error) {
-	db := sqlx.NewDb(es.DB, "postgres")
 
 	var newEmployer EmployerResponse
 
@@ -50,14 +49,14 @@ func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Empl
 		State:   employerData.State,
 	}
 
-	address, err := CreateAddress(ctx, db, addressData)
+	address, err := CreateAddress(ctx, es.DB, addressData)
 	if err != nil {
 		return EmployerResponse{}, err
 	}
 
 	employerData.Location = address.ID
 
-	rows, err := db.NamedQuery(registerWorkerQuery, employerData)
+	rows, err := es.DB.NamedQuery(registerWorkerQuery, employerData)
 	if err != nil {
 		return EmployerResponse{}, err
 	}
@@ -75,11 +74,9 @@ func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Empl
 }
 
 func (es *employerStore) FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error) {
-	db := sqlx.NewDb(es.DB, "postgres")
-
 	var employer EmployerResponse
 
-	err := db.Get(&employer, fetchEmployerByIDQuery, employerId)
+	err := es.DB.Get(&employer, fetchEmployerByIDQuery, employerId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return EmployerResponse{}, apperrors.ErrNoEmployerExists
@@ -91,18 +88,17 @@ func (es *employerStore) FetchEmployerByID(ctx context.Context, employerId int) 
 }
 
 func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error) {
-	db := sqlx.NewDb(es.DB, "postgres")
 	var updatedAddress Address
 	var employerUpdated EmployerResponse
 
-	address, err := GetAddressById(ctx, db, employerData.Location)
+	address, err := GetAddressById(ctx, es.DB, employerData.Location)
 	if err != nil {
 		return EmployerResponse{}, nil
 	}
 
 	isAddressChanged := !MatchAddressEmployer(address, employerData)
 	if isAddressChanged {
-		updatedAddress, err = UpdateAddress(ctx, db, Address{
+		updatedAddress, err = UpdateAddress(ctx, es.DB, Address{
 			ID:      address.ID,
 			Details: employerData.Details,
 			Street:  employerData.Street,
@@ -115,7 +111,7 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 		}
 	}
 
-	rows, err := db.NamedQuery(updateEmployerByIdQuery, employerData)
+	rows, err := es.DB.NamedQuery(updateEmployerByIdQuery, employerData)
 	if err != nil {
 		return EmployerResponse{}, err
 	}
@@ -138,16 +134,15 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 
 func (es *employerStore) DeleteEmployerByID(ctx context.Context, employerId int) (int, error) {
 
-	db := sqlx.NewDb(es.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&addressId, deleteEmployerByIdQuery, employerId)
+	err := es.DB.Get(&addressId, deleteEmployerByIdQuery, employerId)
 
 	if err != nil {
 		return -1, err
 	}
 
-	err = DeleteAddress(ctx, db, addressId)
+	err = DeleteAddress(ctx, es.DB, addressId)
 	if err != nil {
 		return -1, err
 	}

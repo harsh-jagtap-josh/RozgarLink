@@ -22,7 +22,7 @@ type workerStore struct {
 	BaseRepository
 }
 
-func NewWorkerRepo(db *sql.DB) WorkerStorer {
+func NewWorkerRepo(db *sqlx.DB) WorkerStorer {
 	return &workerStore{
 		BaseRepository: BaseRepository{db},
 	}
@@ -41,8 +41,6 @@ const (
 // Create a New Worker
 func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error) {
 
-	db := sqlx.NewDb(ws.DB, "postgres")
-
 	var worker WorkerResponse
 	addressData := Address{
 		Details: workerData.Details,
@@ -51,14 +49,14 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerRespon
 		State:   workerData.State,
 	}
 
-	address, err := CreateAddress(ctx, db, addressData)
+	address, err := CreateAddress(ctx, ws.DB, addressData)
 	if err != nil {
 		return WorkerResponse{}, err
 	}
 
 	workerData.Location = address.ID
 
-	rows, err := db.NamedQuery(createWorkerQuery, workerData)
+	rows, err := ws.DB.NamedQuery(createWorkerQuery, workerData)
 	if err != nil {
 		return WorkerResponse{}, err
 	}
@@ -78,11 +76,9 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerRespon
 // Fetch Worker Details by Worker ID
 func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (WorkerResponse, error) {
 
-	db := sqlx.NewDb(ws.DB, "postgres")
-
 	var worker WorkerResponse
 
-	err := db.Get(&worker, fetchWorkerByIDQuery, workerID)
+	err := ws.DB.Get(&worker, fetchWorkerByIDQuery, workerID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return WorkerResponse{}, apperrors.ErrNoWorkerExists
@@ -90,7 +86,7 @@ func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (Worke
 		return WorkerResponse{}, err
 	}
 
-	address, err := GetAddressById(ctx, db, worker.Location)
+	address, err := GetAddressById(ctx, ws.DB, worker.Location)
 	if err != nil {
 		return WorkerResponse{}, err
 	}
@@ -101,18 +97,17 @@ func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (Worke
 
 // Update Worker Details By ID
 func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error) {
-	db := sqlx.NewDb(ws.DB, "postgres")
 
 	updatedworker := workerData
 
-	address, err := GetAddressByWorkerId(ctx, db, workerData.ID)
+	address, err := GetAddressByWorkerId(ctx, ws.DB, workerData.ID)
 	if err != nil {
 		return WorkerResponse{}, err
 	}
 	isAddressChanged := !MatchAddressWorker(address, workerData)
 	var updAddress Address
 	if isAddressChanged {
-		updAddress, err = UpdateAddress(ctx, db, Address{
+		updAddress, err = UpdateAddress(ctx, ws.DB, Address{
 			ID:      address.ID,
 			Details: workerData.Details,
 			Street:  workerData.Street,
@@ -125,7 +120,7 @@ func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerRe
 		}
 	}
 
-	rows, err := db.NamedQuery(updateWorkerByIDQuery, workerData)
+	rows, err := ws.DB.NamedQuery(updateWorkerByIDQuery, workerData)
 	if err != nil {
 		return WorkerResponse{}, err
 	}
@@ -149,16 +144,15 @@ func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerRe
 // Delete Worker data and address
 func (ws *workerStore) DeleteWorkerByID(ctx context.Context, workerId int) (int, error) {
 
-	db := sqlx.NewDb(ws.DB, "postgres")
 	var addressId int
 
-	err := db.Get(&addressId, deleteWorkerByIdQuery, workerId)
+	err := ws.DB.Get(&addressId, deleteWorkerByIdQuery, workerId)
 
 	if err != nil {
 		return -1, nil
 	}
 
-	err = DeleteAddress(ctx, db, addressId)
+	err = DeleteAddress(ctx, ws.DB, addressId)
 	if err != nil {
 		return -1, err
 	}
