@@ -22,26 +22,27 @@ func NewJobRepo(db *sqlx.DB) JobStorer {
 }
 
 type JobStorer interface {
-	CreateJob(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error)
-	UpdateJobById(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error)
-	FetchJobById(ctx context.Context, jobId int) (JobRepoStruct, error)
+	CreateJob(ctx context.Context, jobData Job) (Job, error)
+	UpdateJobById(ctx context.Context, jobData Job) (Job, error)
+	FetchJobById(ctx context.Context, jobId int) (Job, error)
 	DeleteJobById(ctx context.Context, jobId int) (int, error)
 	FindJobById(ctx context.Context, jobId int) bool
 }
 
 // PostgreSQL Queries
 const (
-	createJobQuery     = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, NOW(), NOW()) RETURNING *;`
-	updateJobByIdQuery = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, updated_at=NOW() where id=:id RETURNING *;`
-	fetchJobByIdQuery  = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
-	deleteJobByIdQuery = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
-	findJobByIdQuery   = `SELECT id FROM jobs WHERE id = $1;`
+	createJobQuery             = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, NOW(), NOW()) RETURNING *;`
+	updateJobByIdQuery         = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, updated_at=NOW() where id=:id RETURNING *;`
+	fetchJobByIdQuery          = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
+	deleteJobByIdQuery         = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
+	findJobByIdQuery           = `SELECT id FROM jobs WHERE id = $1;`
+	fetchJobsByIdEmployerQuery = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.employer_id = $1;`
 )
 
 // Create New Job
-func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error) {
+func (jobS *jobStore) CreateJob(ctx context.Context, jobData Job) (Job, error) {
 
-	var createdJob JobRepoStruct
+	var createdJob Job
 
 	addressData := Address{
 		Details: jobData.Details,
@@ -52,14 +53,14 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (Job
 
 	address, err := CreateAddress(ctx, jobS.DB, addressData)
 	if err != nil {
-		return JobRepoStruct{}, err
+		return Job{}, err
 	}
 
 	jobData.Location = address.ID
 
 	rows, err := jobS.DB.NamedQuery(createJobQuery, jobData)
 	if err != nil {
-		return JobRepoStruct{}, err
+		return Job{}, err
 	}
 
 	defer rows.Close()
@@ -67,7 +68,7 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (Job
 	if rows.Next() {
 		err = rows.StructScan(&createdJob)
 		if err != nil {
-			return JobRepoStruct{}, err
+			return Job{}, err
 		}
 	}
 	createdJob = MapAddressToJob(createdJob, address)
@@ -75,13 +76,13 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData JobRepoStruct) (Job
 }
 
 // Update Job
-func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) (JobRepoStruct, error) {
-	var updatedJob JobRepoStruct
+func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData Job) (Job, error) {
+	var updatedJob Job
 	var updatedAddress Address
 
 	address, err := GetAddressById(ctx, jobS.DB, jobData.Location)
 	if err != nil {
-		return JobRepoStruct{}, nil
+		return Job{}, nil
 	}
 
 	isAddressChanged := !MatchAddressJob(address, jobData)
@@ -95,20 +96,20 @@ func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) 
 			Pincode: jobData.Pincode,
 		})
 		if err != nil {
-			return JobRepoStruct{}, err
+			return Job{}, err
 		}
 	}
 
 	rows, err := jobS.DB.NamedQuery(updateJobByIdQuery, jobData)
 	if err != nil {
-		return JobRepoStruct{}, err
+		return Job{}, err
 	}
 
 	defer rows.Close()
 	if rows.Next() {
 		err = rows.StructScan(&updatedJob)
 		if err != nil {
-			return JobRepoStruct{}, err
+			return Job{}, err
 		}
 	}
 
@@ -122,16 +123,16 @@ func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData JobRepoStruct) 
 }
 
 // Fetch Job Data by ID
-func (jobS *jobStore) FetchJobById(ctx context.Context, jobId int) (JobRepoStruct, error) {
+func (jobS *jobStore) FetchJobById(ctx context.Context, jobId int) (Job, error) {
 
-	var job JobRepoStruct
+	var job Job
 	err := jobS.DB.Get(&job, fetchJobByIdQuery, jobId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return JobRepoStruct{}, apperrors.ErrNoJobExists
+			return Job{}, apperrors.ErrNoJobExists
 		}
 
-		return JobRepoStruct{}, err
+		return Job{}, err
 	}
 
 	return job, nil
@@ -161,4 +162,14 @@ func (jobS *jobStore) FindJobById(ctx context.Context, jobId int) bool {
 	err := jobS.BaseRepository.DB.QueryRow(findJobByIdQuery, jobId).Scan(&ID)
 
 	return err == nil
+}
+
+// Find Jobs By Employer ID
+func (jobS *jobStore) FindJobByEmployerId(ctx context.Context, employerId int) ([]Job, error) {
+	var jobs []Job
+	err := jobS.DB.Select(&jobs, fetchJobsByIdEmployerQuery, employerId)
+	if err != nil {
+		return []Job{}, err
+	}
+	return jobs, nil
 }

@@ -31,11 +31,13 @@ func NewApplicationRepo(db *sqlx.DB) ApplicationStorer {
 
 // PostgreSQL Queries
 const (
-	createApplicationQuery     = `INSERT INTO applications (job_id, worker_id, status, expected_wage, mode_of_arrival, pick_up_location, worker_comments, applied_at, updated_at) VALUES (:job_id, :worker_id, :status, :expected_wage, :mode_of_arrival, :pick_up_location, :worker_comments, NOW(), NOW()) RETURNING *;`
-	updateApplicationByIdQuery = `UPDATE applications SET status=:status, expected_wage=:expected_wage, mode_of_arrival=:mode_of_arrival, pick_up_location=:pick_up_location, worker_comments=:worker_comments, updated_at=NOW() where id=:id RETURNING *;`
-	fethcApplicationByIdQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
-	deleteApplicationByIdQuery = `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
-	findApplicationByIdQuery   = `SELECT id FROM applications WHERE id = $1;`
+	createApplicationQuery           = `INSERT INTO applications (job_id, worker_id, status, expected_wage, mode_of_arrival, pick_up_location, worker_comments, applied_at, updated_at) VALUES (:job_id, :worker_id, :status, :expected_wage, :mode_of_arrival, :pick_up_location, :worker_comments, NOW(), NOW()) RETURNING *;`
+	updateApplicationByIdQuery       = `UPDATE applications SET status=:status, expected_wage=:expected_wage, mode_of_arrival=:mode_of_arrival, pick_up_location=:pick_up_location, worker_comments=:worker_comments, updated_at=NOW() where id=:id RETURNING *;`
+	fethcApplicationByIdQuery        = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
+	deleteApplicationByIdQuery       = `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
+	findApplicationByIdQuery         = `SELECT id FROM applications WHERE id = $1;`
+	fetchApplicationsByWorkerIdQuery = `SELECT * FROM applications WHERE worker_id = $1`
+	fetchApplicationsByJobIdQuery    = `SELECT * FROM applications WHERE job_id = $1`
 )
 
 func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicationData Application) (Application, error) {
@@ -159,11 +161,10 @@ func (appS *applicationStore) FindApplicationById(ctx context.Context, applicati
 }
 
 func (appS *applicationStore) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error) {
-	query := `SELECT * FROM applications WHERE job_id = $1`
 
 	var applications []Application
 
-	err := appS.DB.Select(&applications, query, jobId)
+	err := appS.DB.Select(&applications, fetchApplicationsByJobIdQuery, jobId)
 	if err != nil {
 		return []Application{}, err
 	}
@@ -171,11 +172,10 @@ func (appS *applicationStore) FetchApplicationsByJobId(ctx context.Context, jobI
 }
 
 func (appS *applicationStore) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error) {
-	query := `SELECT * FROM applications WHERE worker_id = $1`
 
 	var applications []Application
 
-	err := appS.DB.Select(&applications, query, workerId)
+	err := appS.DB.Select(&applications, fetchApplicationsByWorkerIdQuery, workerId)
 	if err != nil {
 		return []Application{}, err
 	}

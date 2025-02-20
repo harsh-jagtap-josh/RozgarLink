@@ -10,9 +10,9 @@ import (
 )
 
 type EmployerStorer interface {
-	RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
-	FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error)
-	UpdateEmployerById(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error)
+	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error)
+	FetchEmployerByID(ctx context.Context, employerId int) (Employer, error)
+	UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error)
 	DeleteEmployerByID(ctx context.Context, employerId int) (int, error)
 	FindEmployerByEmail(ctx context.Context, employerEmail string) bool
 	FindEmployerById(ctx context.Context, employerId int) bool
@@ -38,9 +38,9 @@ func NewEmployerRepo(db *sqlx.DB) EmployerStorer {
 	}
 }
 
-func (es *employerStore) RegisterEmployer(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error) {
+func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error) {
 
-	var newEmployer EmployerResponse
+	var newEmployer Employer
 
 	addressData := Address{
 		Details: employerData.Details,
@@ -51,14 +51,14 @@ func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Empl
 
 	address, err := CreateAddress(ctx, es.DB, addressData)
 	if err != nil {
-		return EmployerResponse{}, err
+		return Employer{}, err
 	}
 
 	employerData.Location = address.ID
 
 	rows, err := es.DB.NamedQuery(registerWorkerQuery, employerData)
 	if err != nil {
-		return EmployerResponse{}, err
+		return Employer{}, err
 	}
 
 	defer rows.Close()
@@ -66,34 +66,34 @@ func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Empl
 	if rows.Next() {
 		err = rows.StructScan(&newEmployer)
 		if err != nil {
-			return EmployerResponse{}, err
+			return Employer{}, err
 		}
 	}
 	newEmployer = MapAddressToEmployer(newEmployer, address)
 	return newEmployer, nil
 }
 
-func (es *employerStore) FetchEmployerByID(ctx context.Context, employerId int) (EmployerResponse, error) {
-	var employer EmployerResponse
+func (es *employerStore) FetchEmployerByID(ctx context.Context, employerId int) (Employer, error) {
+	var employer Employer
 
 	err := es.DB.Get(&employer, fetchEmployerByIDQuery, employerId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return EmployerResponse{}, apperrors.ErrNoEmployerExists
+			return Employer{}, apperrors.ErrNoEmployerExists
 		}
-		return EmployerResponse{}, err
+		return Employer{}, err
 	}
 
 	return employer, nil
 }
 
-func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData EmployerResponse) (EmployerResponse, error) {
+func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error) {
 	var updatedAddress Address
-	var employerUpdated EmployerResponse
+	var employerUpdated Employer
 
 	address, err := GetAddressById(ctx, es.DB, employerData.Location)
 	if err != nil {
-		return EmployerResponse{}, nil
+		return Employer{}, nil
 	}
 
 	isAddressChanged := !MatchAddressEmployer(address, employerData)
@@ -107,19 +107,19 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 			Pincode: employerData.Pincode,
 		})
 		if err != nil {
-			return EmployerResponse{}, err
+			return Employer{}, err
 		}
 	}
 
 	rows, err := es.DB.NamedQuery(updateEmployerByIdQuery, employerData)
 	if err != nil {
-		return EmployerResponse{}, err
+		return Employer{}, err
 	}
 	defer rows.Close()
 	if rows.Next() {
 		err = rows.StructScan(&employerUpdated)
 		if err != nil {
-			return EmployerResponse{}, err
+			return Employer{}, err
 		}
 	}
 

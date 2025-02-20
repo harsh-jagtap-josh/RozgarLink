@@ -28,24 +28,6 @@ type Worker struct {
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`
 	Language        string    `db:"language"`
-}
-
-type WorkerResponse struct {
-	ID              int       `db:"id"`
-	Name            string    `db:"name"`
-	ContactNumber   string    `db:"contact_number"`
-	Email           string    `db:"email"`
-	Gender          Gender    `db:"gender"`
-	Password        string    `db:"password"`
-	Sectors         string    `db:"sectors"`
-	Skills          string    `db:"skills"`
-	Location        int       `db:"location"`
-	IsAvailable     bool      `db:"is_available"`
-	Rating          float64   `db:"rating"`
-	TotalJobsWorked int       `db:"total_jobs_worked"`
-	CreatedAt       time.Time `db:"created_at"`
-	UpdatedAt       time.Time `db:"updated_at"`
-	Language        string    `db:"language"`
 	Details         string    `db:"details"`
 	Street          string    `db:"street"`
 	City            string    `db:"city"`
@@ -61,23 +43,6 @@ const (
 )
 
 type Employer struct {
-	ID           int          `db:"id"`
-	Name         string       `db:"name"`
-	ContactNo    string       `db:"contact_number"`
-	Email        string       `db:"email"`
-	Type         EmployerType `db:"type"`
-	Password     string       `db:"password"`
-	Sectors      string       `db:"sectors"`
-	Location     int          `db:"location"`
-	IsVerified   bool         `db:"is_verified"`
-	Rating       float64      `db:"rating"`
-	WorkersHired int          `db:"workers_hired"`
-	CreatedAt    time.Time    `db:"created_at"`
-	UpdatedAt    time.Time    `db:"updated_at"`
-	Language     string       `db:"language"`
-}
-
-type EmployerResponse struct {
 	ID           int          `db:"id"`
 	Name         string       `db:"name"`
 	ContactNo    string       `db:"contact_number"`
@@ -129,22 +94,6 @@ type LoginResponse struct {
 // Job Structs
 
 type Job struct {
-	ID              int       `db:"id"`
-	EmployerID      int       `db:"employer_id"`
-	Title           string    `db:"title"`
-	RequiredGender  string    `db:"required_gender"`
-	Description     string    `db:"description"`
-	DurationInHours int       `db:"duration_in_hours"`
-	SkillsRequired  string    `db:"skills_required"`
-	Sectors         string    `db:"sectors"`
-	Wage            int       `db:"wage"`
-	Vacancy         int       `db:"vacancy"`
-	Location        int       `db:"location"`
-	CreatedAt       time.Time `db:"created_at"`
-	UpdatedAt       time.Time `db:"updated_at"`
-}
-
-type JobRepoStruct struct {
 	ID              int       `db:"id"`
 	EmployerID      int       `db:"employer_id"`
 	Title           string    `db:"title" `

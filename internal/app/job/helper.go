@@ -5,7 +5,7 @@ import (
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
 
-func MapJobRepoStructToService(job repo.JobRepoStruct) Job {
+func MapJobRepoStructToService(job repo.Job) Job {
 	return Job{
 		ID:              job.ID,
 		EmployerID:      job.EmployerID,
@@ -30,8 +30,8 @@ func MapJobRepoStructToService(job repo.JobRepoStruct) Job {
 	}
 }
 
-func MapJobServiceStructToRepo(job Job) repo.JobRepoStruct {
-	return repo.JobRepoStruct{
+func MapJobServiceStructToRepo(job Job) repo.Job {
+	return repo.Job{
 		ID:              job.ID,
 		EmployerID:      job.EmployerID,
 		Title:           job.Title,

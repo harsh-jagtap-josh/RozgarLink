@@ -2,7 +2,7 @@ package employer
 
 import "github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 
-func MapRepoToServiceDomain(employer repo.EmployerResponse) Employer {
+func MapRepoToServiceDomain(employer repo.Employer) Employer {
 	return Employer{
 		ID:        employer.ID,
 		Name:      employer.Name,
@@ -27,8 +27,8 @@ func MapRepoToServiceDomain(employer repo.EmployerResponse) Employer {
 	}
 }
 
-func MapServiceToRepoDomain(employer Employer) repo.EmployerResponse {
-	return repo.EmployerResponse{
+func MapServiceToRepoDomain(employer Employer) repo.Employer {
+	return repo.Employer{
 		ID:           employer.ID,
 		Name:         employer.Name,
 		ContactNo:    employer.ContactNo,

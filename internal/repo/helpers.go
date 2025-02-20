@@ -1,6 +1,6 @@
 package repo
 
-func MapAddressToWorker(workerWithAddress WorkerResponse, address Address) WorkerResponse {
+func MapAddressToWorker(workerWithAddress Worker, address Address) Worker {
 	// Map all address fields to output worker object
 	workerWithAddress.Location = address.ID
 	workerWithAddress.Details = address.Details
@@ -12,7 +12,7 @@ func MapAddressToWorker(workerWithAddress WorkerResponse, address Address) Worke
 	return workerWithAddress
 }
 
-func MapAddressToEmployer(employer EmployerResponse, address Address) EmployerResponse {
+func MapAddressToEmployer(employer Employer, address Address) Employer {
 	// Map all address fields to output employer object
 	employer.Location = address.ID
 	employer.Details = address.Details
@@ -24,7 +24,7 @@ func MapAddressToEmployer(employer EmployerResponse, address Address) EmployerRe
 	return employer
 }
 
-func MapAddressToJob(job JobRepoStruct, address Address) JobRepoStruct {
+func MapAddressToJob(job Job, address Address) Job {
 	// Map all address fields to output job object
 	job.Location = address.ID
 	job.Details = address.Details
@@ -48,21 +48,21 @@ func MapAddressToApplication(application Application, address Address) Applicati
 	return application
 }
 
-func MatchAddressWorker(address Address, worker WorkerResponse) bool {
+func MatchAddressWorker(address Address, worker Worker) bool {
 	if address.Details == worker.Details && address.Street == worker.Street && address.State == worker.State && address.City == worker.City && address.Pincode == worker.Pincode {
 		return true
 	}
 	return false
 }
 
-func MatchAddressEmployer(address Address, employer EmployerResponse) bool {
+func MatchAddressEmployer(address Address, employer Employer) bool {
 	if address.Details == employer.Details && address.Street == employer.Street && address.State == employer.State && address.City == employer.City && address.Pincode == employer.Pincode {
 		return true
 	}
 	return false
 }
 
-func MatchAddressJob(address Address, job JobRepoStruct) bool {
+func MatchAddressJob(address Address, job Job) bool {
 	if address.Details == job.Details && address.Street == job.Street && address.State == job.State && address.City == job.City && address.Pincode == job.Pincode {
 		return true
 	}

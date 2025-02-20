@@ -10,9 +10,9 @@ import (
 )
 
 type WorkerStorer interface {
-	FetchWorkerByID(ctx context.Context, workerID int) (WorkerResponse, error)
-	CreateWorker(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error)
-	UpdateWorkerByID(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error)
+	FetchWorkerByID(ctx context.Context, workerID int) (Worker, error)
+	CreateWorker(ctx context.Context, workerData Worker) (Worker, error)
+	UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error)
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
 	FindWorkerByEmail(ctx context.Context, email string) bool
 	FindWorkerById(ctx context.Context, id int) bool
@@ -39,9 +39,9 @@ const (
 )
 
 // Create a New Worker
-func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error) {
+func (ws *workerStore) CreateWorker(ctx context.Context, workerData Worker) (Worker, error) {
 
-	var worker WorkerResponse
+	var worker Worker
 	addressData := Address{
 		Details: workerData.Details,
 		Street:  workerData.Street,
@@ -51,14 +51,14 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerRespon
 
 	address, err := CreateAddress(ctx, ws.DB, addressData)
 	if err != nil {
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 
 	workerData.Location = address.ID
 
 	rows, err := ws.DB.NamedQuery(createWorkerQuery, workerData)
 	if err != nil {
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 
 	defer rows.Close()
@@ -66,7 +66,7 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerRespon
 	if rows.Next() {
 		err = rows.StructScan(&worker)
 		if err != nil {
-			return WorkerResponse{}, err
+			return Worker{}, err
 		}
 	}
 	worker = MapAddressToWorker(worker, address)
@@ -74,21 +74,21 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData WorkerRespon
 }
 
 // Fetch Worker Details by Worker ID
-func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (WorkerResponse, error) {
+func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (Worker, error) {
 
-	var worker WorkerResponse
+	var worker Worker
 
 	err := ws.DB.Get(&worker, fetchWorkerByIDQuery, workerID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return WorkerResponse{}, apperrors.ErrNoWorkerExists
+			return Worker{}, apperrors.ErrNoWorkerExists
 		}
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 
 	address, err := GetAddressById(ctx, ws.DB, worker.Location)
 	if err != nil {
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 
 	worker = MapAddressToWorker(worker, address)
@@ -96,13 +96,13 @@ func (ws *workerStore) FetchWorkerByID(ctx context.Context, workerID int) (Worke
 }
 
 // Update Worker Details By ID
-func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerResponse) (WorkerResponse, error) {
+func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error) {
 
 	updatedworker := workerData
 
 	address, err := GetAddressByWorkerId(ctx, ws.DB, workerData.ID)
 	if err != nil {
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 	isAddressChanged := !MatchAddressWorker(address, workerData)
 	var updAddress Address
@@ -116,13 +116,13 @@ func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerRe
 			Pincode: workerData.Pincode,
 		})
 		if err != nil {
-			return WorkerResponse{}, err
+			return Worker{}, err
 		}
 	}
 
 	rows, err := ws.DB.NamedQuery(updateWorkerByIDQuery, workerData)
 	if err != nil {
-		return WorkerResponse{}, err
+		return Worker{}, err
 	}
 
 	defer rows.Close()
@@ -130,7 +130,7 @@ func (ws *workerStore) UpdateWorkerByID(ctx context.Context, workerData WorkerRe
 	if rows.Next() {
 		err = rows.StructScan(&updatedworker)
 		if err != nil {
-			return WorkerResponse{}, err
+			return Worker{}, err
 		}
 	}
 
