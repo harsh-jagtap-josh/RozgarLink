@@ -20,7 +20,6 @@ const (
 
 // create a new address and return newly created address object, and error
 func CreateAddress(ctx context.Context, sqlxDb *sqlx.DB, addressData Address) (Address, error) {
-
 	var newAddress Address
 	rows, err := sqlxDb.NamedQuery(createAddressQuery, addressData)
 	if err != nil {

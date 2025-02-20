@@ -109,7 +109,7 @@ func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 		jobId, err := strconv.Atoi(id)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchJob.Error(), apperrors.MsgInvalidJobId, id)
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteJob.Error(), apperrors.MsgInvalidJobId, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 			return
 		}
@@ -128,5 +128,36 @@ func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func FetchApplicationsByJobId(js Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		vars := mux.Vars(r)
+		id := vars["job_id"]
+		jobId, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.MsgInvalidJobId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		applications, err := js.FetchApplicationsByJobId(ctx, jobId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoJobExists) {
+				logger.Errorw(ctx, apperrors.ErrNoJobExists.Error(), zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.ErrNoJobExists.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.ErrFetchApplication.Error(), zap.Error(err), zap.String("ID", id))
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrFetchApplication.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "job applications retrieved successfully", http.StatusOK, applications)
 	}
 }

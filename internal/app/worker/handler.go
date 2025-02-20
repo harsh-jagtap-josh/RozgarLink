@@ -119,3 +119,46 @@ func DeleteWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+func FetchApplicationsByWorkerId(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		workerId, id := workerIsValid(w, r)
+		if workerId == -1 {
+			return
+		}
+		applications, err := workerSvc.FetchApplicationsByWorkerId(ctx, workerId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoWorkerExists) {
+				logger.Errorw(ctx, apperrors.ErrNoWorkerExists.Error(), zap.Error(err), zap.String("ID", id))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.ErrNoWorkerExists.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.ErrFetchApplication.Error(), zap.Error(err))
+			http.Error(w, apperrors.ErrFetchApplication.Error()+","+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		middleware.HandleSuccessResponse(ctx, w, "successfully fetched applications details", http.StatusOK, applications)
+	}
+}
+
+func workerIsValid(w http.ResponseWriter, r *http.Request) (int, string) {
+	ctx := r.Context()
+
+	// retrieve id from query params
+	vars := mux.Vars(r)
+	id := vars["worker_id"]
+	workerId, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgInvalidWorkerId, id)
+		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		return -1, ""
+	}
+
+	return workerId, id
+
+}

@@ -27,16 +27,17 @@ type JobStorer interface {
 	FetchJobById(ctx context.Context, jobId int) (Job, error)
 	DeleteJobById(ctx context.Context, jobId int) (int, error)
 	FindJobById(ctx context.Context, jobId int) bool
+	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error)
 }
 
 // PostgreSQL Queries
 const (
-	createJobQuery             = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, NOW(), NOW()) RETURNING *;`
-	updateJobByIdQuery         = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, updated_at=NOW() where id=:id RETURNING *;`
-	fetchJobByIdQuery          = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
-	deleteJobByIdQuery         = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
-	findJobByIdQuery           = `SELECT id FROM jobs WHERE id = $1;`
-	fetchJobsByIdEmployerQuery = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.employer_id = $1;`
+	createJobQuery                = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, NOW(), NOW()) RETURNING *;`
+	updateJobByIdQuery            = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, updated_at=NOW() where id=:id RETURNING *;`
+	fetchJobByIdQuery             = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
+	deleteJobByIdQuery            = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
+	findJobByIdQuery              = `SELECT id FROM jobs WHERE id = $1;`
+	fetchApplicationsByJobIdQuery = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode FROM applications inner join address on applications.pick_up_location = address.id WHERE applications.job_id = $1`
 )
 
 // Create New Job
@@ -49,6 +50,7 @@ func (jobS *jobStore) CreateJob(ctx context.Context, jobData Job) (Job, error) {
 		Street:  jobData.Street,
 		City:    jobData.City,
 		State:   jobData.State,
+		Pincode: jobData.Pincode,
 	}
 
 	address, err := CreateAddress(ctx, jobS.DB, addressData)
@@ -164,12 +166,14 @@ func (jobS *jobStore) FindJobById(ctx context.Context, jobId int) bool {
 	return err == nil
 }
 
-// Find Jobs By Employer ID
-func (jobS *jobStore) FindJobByEmployerId(ctx context.Context, employerId int) ([]Job, error) {
-	var jobs []Job
-	err := jobS.DB.Select(&jobs, fetchJobsByIdEmployerQuery, employerId)
+// fetch job applications
+func (jobS *jobStore) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error) {
+
+	var applications []Application
+
+	err := jobS.DB.Select(&applications, fetchApplicationsByJobIdQuery, jobId)
 	if err != nil {
-		return []Job{}, err
+		return []Application{}, err
 	}
-	return jobs, nil
+	return applications, nil
 }

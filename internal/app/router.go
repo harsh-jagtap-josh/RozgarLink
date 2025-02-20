@@ -37,12 +37,14 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// workerRouter.Use(middleware.RequireSameUserOrAdmin) // only worker with same ID has access to or admin
 	workerRouter.HandleFunc(workerIdParam, worker.UpdateWorkerByID(deps.WorkerService)).Methods(http.MethodPut)
 	workerRouter.HandleFunc(workerIdParam, worker.DeleteWorkerByID(deps.WorkerService)).Methods(http.MethodDelete)
+	workerRouter.HandleFunc(workerIdParam+"/applications", worker.FetchApplicationsByWorkerId(deps.WorkerService)).Methods(http.MethodGet)
 
 	// Employer Routes
 	employerRouter := router.PathPrefix("/employer").Subrouter()
 	employerRouter.HandleFunc(employerIdParam, employer.FetchEmployerByID(deps.EmployerService)).Methods(http.MethodGet)
 	employerRouter.HandleFunc(employerIdParam, employer.UpdateEmployerById(deps.EmployerService)).Methods(http.MethodPut)
 	employerRouter.HandleFunc(employerIdParam, employer.DeleteEmployerByID(deps.EmployerService)).Methods(http.MethodDelete)
+	employerRouter.HandleFunc(employerIdParam+"/jobs", employer.FetchJobsByEmployerId(deps.EmployerService)).Methods(http.MethodGet)
 
 	// Job Routes
 	jobRouter := router.PathPrefix("/job").Subrouter()
@@ -50,6 +52,7 @@ func NewRouter(deps Dependencies) *mux.Router {
 	jobRouter.HandleFunc(jobIdParam, job.FetchJobByID(deps.JobService)).Methods(http.MethodGet)
 	jobRouter.HandleFunc(jobIdParam, job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
 	jobRouter.HandleFunc(jobIdParam, job.DeleteJobByID(deps.JobService)).Methods(http.MethodDelete)
+	jobRouter.HandleFunc(jobIdParam+"/applications", job.FetchApplicationsByJobId(deps.JobService)).Methods(http.MethodGet)
 
 	// Application Routes
 	applicationRouter := router.PathPrefix("/application").Subrouter()

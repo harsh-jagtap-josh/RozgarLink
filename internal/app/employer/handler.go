@@ -38,7 +38,7 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 			}
 
 			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDb, id)
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgFetchFromDb, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
@@ -142,7 +142,7 @@ func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoEmployerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteEmployer.Error(), apperrors.ErrNoWorkerExists.Error(), id)
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteEmployer.Error(), apperrors.ErrNoEmployerExists.Error(), id)
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
 				return
 			}
@@ -153,5 +153,37 @@ func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func FetchJobsByEmployerId(es Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		ctx := r.Context()
+
+		vars := mux.Vars(r)
+		id := vars["employer_id"]
+		employerID, err := strconv.Atoi(id)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+			return
+		}
+
+		jobs, err := es.FetchJobsByEmployerId(ctx, employerID)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNoEmployerExists) {
+				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
+				middleware.HandleErrorResponse(ctx, w, apperrors.ErrNoEmployerExists.Error(), http.StatusNotFound)
+				return
+			}
+
+			logger.Errorw(ctx, apperrors.ErrFetchJobs.Error(), zap.Error(err), zap.String("ID", id))
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrFetchJobs.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully fetched jobs", http.StatusOK, jobs)
 	}
 }

@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
@@ -16,18 +17,17 @@ type Service interface {
 	UpdateJobByID(ctx context.Context, jobData Job) (Job, error)
 	FetchJobByID(ctx context.Context, jobId int) (Job, error)
 	DeleteJobByID(ctx context.Context, jobId int) (int, error)
+	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.Application, error)
 }
 
 func NewService(jobRepo repo.JobStorer) Service {
-	return jobService{
+	return &jobService{
 		jobRepo: jobRepo,
 	}
 }
 
-func (js jobService) CreateJob(ctx context.Context, jobData Job) (Job, error) {
-
+func (js *jobService) CreateJob(ctx context.Context, jobData Job) (Job, error) {
 	jobRepoObj := MapJobServiceStructToRepo(jobData)
-
 	job, err := js.jobRepo.CreateJob(ctx, jobRepoObj)
 	if err != nil {
 		return Job{}, err
@@ -38,7 +38,7 @@ func (js jobService) CreateJob(ctx context.Context, jobData Job) (Job, error) {
 	return createdJob, nil
 }
 
-func (js jobService) UpdateJobByID(ctx context.Context, jobData Job) (Job, error) {
+func (js *jobService) UpdateJobByID(ctx context.Context, jobData Job) (Job, error) {
 
 	jobRepoObj := MapJobServiceStructToRepo(jobData)
 
@@ -52,7 +52,7 @@ func (js jobService) UpdateJobByID(ctx context.Context, jobData Job) (Job, error
 	return updatedJob, nil
 }
 
-func (js jobService) FetchJobByID(ctx context.Context, jobId int) (Job, error) {
+func (js *jobService) FetchJobByID(ctx context.Context, jobId int) (Job, error) {
 	job, err := js.jobRepo.FetchJobById(ctx, jobId)
 	if err != nil {
 		return Job{}, err
@@ -62,7 +62,7 @@ func (js jobService) FetchJobByID(ctx context.Context, jobId int) (Job, error) {
 	return fetchedJob, nil
 }
 
-func (js jobService) DeleteJobByID(ctx context.Context, jobId int) (int, error) {
+func (js *jobService) DeleteJobByID(ctx context.Context, jobId int) (int, error) {
 	exists := js.jobRepo.FindJobById(ctx, jobId)
 	if !exists {
 		return -1, apperrors.ErrNoJobExists
@@ -73,4 +73,22 @@ func (js jobService) DeleteJobByID(ctx context.Context, jobId int) (int, error) 
 		return -1, err
 	}
 	return id, nil
+}
+
+func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.Application, error) {
+	exists := js.jobRepo.FindJobById(ctx, jobId)
+	if !exists {
+		return []application.Application{}, apperrors.ErrNoJobExists
+	}
+
+	applications, err := js.jobRepo.FetchApplicationsByJobId(ctx, jobId)
+	if err != nil {
+		return []application.Application{}, err
+	}
+
+	var fetchedApplication []application.Application
+	for _, appl := range applications {
+		fetchedApplication = append(fetchedApplication, application.MapRepoApplicationToService(appl))
+	}
+	return fetchedApplication, nil
 }

@@ -16,16 +16,18 @@ type EmployerStorer interface {
 	DeleteEmployerByID(ctx context.Context, employerId int) (int, error)
 	FindEmployerByEmail(ctx context.Context, employerEmail string) bool
 	FindEmployerById(ctx context.Context, employerId int) bool
+	FindJobByEmployerId(ctx context.Context, employerId int) ([]Job, error)
 }
 
 // PostgreSQL Queries
 const (
-	registerWorkerQuery      = `INSERT INTO employers (name, contact_number, email, type, password, sectors, location, is_verified, rating, workers_hired, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :type, :password, :sectors, :location, :is_verified, :rating, :workers_hired, NOW(), NOW(), :language) RETURNING *;`
-	fetchEmployerByIDQuery   = `SELECT employers.*, address.details, address.street, address.city, address.state, address.pincode from employers inner join address on employers.location = address.id where employers.id = $1;`
-	updateEmployerByIdQuery  = `UPDATE employers SET name=:name, contact_number=:contact_number, email=:email, type=:type, sectors=:sectors, rating=:rating, workers_hired=:workers_hired, is_verified=:is_verified, updated_at=NOW(), language=:language WHERE id=:id RETURNING *;`
-	deleteEmployerByIdQuery  = `DELETE from employers where id=$1 RETURNING location;`
-	findEmployerByEmailQuery = `SELECT id from employers where email=$1;`
-	findEmployerByIDQuery    = `SELECT id from employers where id=$1;`
+	registerWorkerQuery        = `INSERT INTO employers (name, contact_number, email, type, password, sectors, location, is_verified, rating, workers_hired, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :type, :password, :sectors, :location, :is_verified, :rating, :workers_hired, NOW(), NOW(), :language) RETURNING *;`
+	fetchEmployerByIDQuery     = `SELECT employers.*, address.details, address.street, address.city, address.state, address.pincode from employers inner join address on employers.location = address.id where employers.id = $1;`
+	updateEmployerByIdQuery    = `UPDATE employers SET name=:name, contact_number=:contact_number, email=:email, type=:type, sectors=:sectors, rating=:rating, workers_hired=:workers_hired, is_verified=:is_verified, updated_at=NOW(), language=:language WHERE id=:id RETURNING *;`
+	deleteEmployerByIdQuery    = `DELETE from employers where id=$1 RETURNING location;`
+	findEmployerByEmailQuery   = `SELECT id from employers where email=$1;`
+	findEmployerByIDQuery      = `SELECT id from employers where id=$1;`
+	fetchJobsByIdEmployerQuery = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.employer_id = $1;`
 )
 
 type employerStore struct {
@@ -47,6 +49,7 @@ func (es *employerStore) RegisterEmployer(ctx context.Context, employerData Empl
 		Street:  employerData.Street,
 		City:    employerData.City,
 		State:   employerData.State,
+		Pincode: employerData.Pincode,
 	}
 
 	address, err := CreateAddress(ctx, es.DB, addressData)
@@ -160,4 +163,14 @@ func (es *employerStore) FindEmployerById(ctx context.Context, employerId int) b
 	var ID int
 	err := es.BaseRepository.DB.QueryRow(findEmployerByIDQuery, employerId).Scan(&ID)
 	return err == nil
+}
+
+// Find Jobs By Employer ID
+func (es *employerStore) FindJobByEmployerId(ctx context.Context, employerId int) ([]Job, error) {
+	var jobs []Job
+	err := es.DB.Select(&jobs, fetchJobsByIdEmployerQuery, employerId)
+	if err != nil {
+		return []Job{}, err
+	}
+	return jobs, nil
 }

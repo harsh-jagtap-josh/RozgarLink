@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 )
 
@@ -33,7 +32,7 @@ func MapRepoApplicationToService(application repo.Application) Application {
 		Status:        Status(application.Status),
 		ExpectedWage:  application.ExpectedWage,
 		ModeOfArrival: ModeOfArrival(application.ModeOfArrival),
-		PickUpLocation: worker.Address{
+		PickUpLocation: Address{
 			ID:      application.PickUpLocation,
 			Details: application.Details,
 			Street:  application.Street,

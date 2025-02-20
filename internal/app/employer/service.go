@@ -3,6 +3,7 @@ package employer
 import (
 	"context"
 
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/utils"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
@@ -17,6 +18,7 @@ type Service interface {
 	UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error, error)
 	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error, error)
 	DeleteEmployerById(ctx context.Context, employerId int) (int, error)
+	FetchJobsByEmployerId(ctx context.Context, employerId int) ([]job.Job, error)
 }
 
 func NewService(employerRepo repo.EmployerStorer) Service {
@@ -102,4 +104,20 @@ func (empS *service) DeleteEmployerById(ctx context.Context, employerId int) (in
 	}
 
 	return id, nil
+}
+
+func (es *service) FetchJobsByEmployerId(ctx context.Context, employerId int) ([]job.Job, error) {
+	exists := es.employerRepo.FindEmployerById(ctx, employerId)
+	if !exists {
+		return []job.Job{}, apperrors.ErrNoEmployerExists
+	}
+	jobs, err := es.employerRepo.FindJobByEmployerId(ctx, employerId)
+	if err != nil {
+		return []job.Job{}, err
+	}
+	var mappedJobs []job.Job
+	for _, newJob := range jobs {
+		mappedJobs = append(mappedJobs, job.MapJobRepoStructToService(newJob))
+	}
+	return mappedJobs, nil
 }

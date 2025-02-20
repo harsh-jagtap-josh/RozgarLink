@@ -16,6 +16,7 @@ type WorkerStorer interface {
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
 	FindWorkerByEmail(ctx context.Context, email string) bool
 	FindWorkerById(ctx context.Context, id int) bool
+	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error)
 }
 
 type workerStore struct {
@@ -30,12 +31,13 @@ func NewWorkerRepo(db *sqlx.DB) WorkerStorer {
 
 // PostgreSQL Queries
 const (
-	fetchWorkerByIDQuery  = `SELECT workers.id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language from workers inner join address on workers.location = address.id where workers.id = $1;`
-	createWorkerQuery     = `INSERT INTO Workers (name, contact_number, email, gender, password, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :gender, :password, :sectors, :skills, :location, :is_available, :rating, :total_jobs_worked, NOW(), NOW(), :language) RETURNING *;`
-	updateWorkerByIDQuery = `UPDATE Workers SET name=:name, contact_number=:contact_number, email=:email, gender=:gender, sectors=:sectors, skills=:skills, is_available=:is_available, rating=:rating, total_jobs_worked=:total_jobs_worked, updated_at=NOW(), language=:language WHERE id=:id RETURNING *;`
-	deleteWorkerByIdQuery = `DELETE FROM workers WHERE id=$1 RETURNING location;`
-	findEmailExistsQuery  = "SELECT id FROM workers WHERE email = $1;"
-	findIdExistsQuery     = "SELECT id FROM workers WHERE id = $1;"
+	fetchWorkerByIDQuery             = `SELECT workers.id, name, contact_number, email, gender, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language from workers inner join address on workers.location = address.id where workers.id = $1;`
+	createWorkerQuery                = `INSERT INTO Workers (name, contact_number, email, gender, password, sectors, skills, location, is_available, rating, total_jobs_worked, created_at, updated_at, language) VALUES (:name, :contact_number, :email, :gender, :password, :sectors, :skills, :location, :is_available, :rating, :total_jobs_worked, NOW(), NOW(), :language) RETURNING *;`
+	updateWorkerByIDQuery            = `UPDATE Workers SET name=:name, contact_number=:contact_number, email=:email, gender=:gender, sectors=:sectors, skills=:skills, is_available=:is_available, rating=:rating, total_jobs_worked=:total_jobs_worked, updated_at=NOW(), language=:language WHERE id=:id RETURNING *;`
+	deleteWorkerByIdQuery            = `DELETE FROM workers WHERE id=$1 RETURNING location;`
+	findEmailExistsQuery             = "SELECT id FROM workers WHERE email = $1;"
+	findIdExistsQuery                = "SELECT id FROM workers WHERE id = $1;"
+	fetchApplicationsByWorkerIdQuery = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode FROM applications inner join address on applications.pick_up_location = address.id WHERE applications.worker_id = $1`
 )
 
 // Create a New Worker
@@ -47,6 +49,7 @@ func (ws *workerStore) CreateWorker(ctx context.Context, workerData Worker) (Wor
 		Street:  workerData.Street,
 		City:    workerData.City,
 		State:   workerData.State,
+		Pincode: worker.Pincode,
 	}
 
 	address, err := CreateAddress(ctx, ws.DB, addressData)
@@ -174,4 +177,15 @@ func (ws *workerStore) FindWorkerById(ctx context.Context, id int) bool {
 	err := ws.BaseRepository.DB.QueryRow(findIdExistsQuery, id).Scan(&ID)
 
 	return err == nil
+}
+
+func (ws *workerStore) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error) {
+
+	var applications []Application
+
+	err := ws.DB.Select(&applications, fetchApplicationsByWorkerIdQuery, workerId)
+	if err != nil {
+		return []Application{}, err
+	}
+	return applications, nil
 }

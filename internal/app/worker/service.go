@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/utils"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
@@ -17,6 +18,7 @@ type Service interface {
 	CreateWorker(ctx context.Context, workerData WorkerRequest) (WorkerRequest, error, error)
 	UpdateWorkerByID(ctx context.Context, workerData WorkerRequest) (WorkerRequest, error, error)
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
+	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error)
 }
 
 func NewService(workerRepo repo.WorkerStorer) Service {
@@ -96,4 +98,23 @@ func (ws *service) DeleteWorkerByID(ctx context.Context, workerId int) (int, err
 		return -1, err
 	}
 	return id, nil
+}
+
+func (ws *service) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error) {
+	workerExists := ws.workerRepo.FindWorkerById(ctx, workerId)
+	if !workerExists {
+		return []application.Application{}, apperrors.ErrNoWorkerExists
+	}
+
+	applications, err := ws.workerRepo.FetchApplicationsByWorkerId(ctx, workerId)
+	if err != nil {
+		return []application.Application{}, err
+	}
+
+	var fetchedApplications []application.Application
+	for _, appl := range applications {
+		fetchedApplications = append(fetchedApplications, application.MapRepoApplicationToService(appl))
+	}
+
+	return fetchedApplications, nil
 }

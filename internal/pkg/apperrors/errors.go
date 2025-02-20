@@ -38,6 +38,7 @@ var (
 	ErrDeleteJob   = errors.New("failed to delete job data")
 	ErrFetchJob    = errors.New("failed to fetch job data")
 	ErrNoJobExists = errors.New("no job found with id")
+	ErrFetchJobs   = errors.New("failed to fetch jobs")
 
 	// Application Errrors
 	ErrCreateApplication   = errors.New("failed to create application")
