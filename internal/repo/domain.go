@@ -105,6 +105,9 @@ type Job struct {
 	Wage            int       `db:"wage"`
 	Vacancy         int       `db:"vacancy"`
 	Location        int       `db:"location"`
+	Date            string    `db:"date"`
+	StartHour       string    `db:"start_hour"`
+	EndHour         string    `db:"end_hour"`
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`
 	Details         string    `db:"details"`

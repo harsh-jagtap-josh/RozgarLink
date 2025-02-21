@@ -50,7 +50,7 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		var workerData WorkerRequest
+		var workerData Worker
 
 		vars := mux.Vars(r)
 		id := vars["worker_id"]

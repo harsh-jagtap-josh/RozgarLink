@@ -2,8 +2,8 @@ package worker
 
 import "github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
 
-func MapRepoDomainToService(repoWorker repo.Worker) WorkerRequest {
-	return WorkerRequest{
+func MapRepoDomainToService(repoWorker repo.Worker) Worker {
+	return Worker{
 		ID:            repoWorker.ID,
 		Name:          repoWorker.Name,
 		ContactNumber: repoWorker.ContactNumber,
@@ -27,7 +27,7 @@ func MapRepoDomainToService(repoWorker repo.Worker) WorkerRequest {
 	}
 }
 
-func MapServiceDomainToRepo(Worker WorkerRequest) repo.Worker {
+func MapServiceDomainToRepo(Worker Worker) repo.Worker {
 	return repo.Worker{
 		ID:              Worker.ID,
 		Name:            Worker.Name,

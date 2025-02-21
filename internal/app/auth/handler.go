@@ -16,7 +16,7 @@ func RegisterWorker(workerSvc worker.Service) func(w http.ResponseWriter, r *htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		var workerData worker.WorkerRequest
+		var workerData worker.Worker
 		err := json.NewDecoder(r.Body).Decode(&workerData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))

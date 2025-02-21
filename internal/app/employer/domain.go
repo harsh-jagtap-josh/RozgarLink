@@ -34,25 +34,3 @@ type Employer struct {
 	UpdatedAt    time.Time    `json:"updated_at"`
 	Language     string       `json:"language"`
 }
-
-type EmployerServiceStruct struct {
-	ID           int          `json:"id"`
-	Name         string       `json:"name"`
-	ContactNo    string       `json:"contact_number"`
-	Email        string       `json:"email"`
-	Type         EmployerType `json:"type"`
-	Password     string       `json:"password"`
-	Sectors      string       `json:"sectors"`
-	Location     int          `json:"location"`
-	IsVerified   bool         `json:"is_verified"`
-	Rating       float64      `json:"rating"`
-	WorkersHired int          `json:"workers_hired"`
-	CreatedAt    time.Time    `json:"created_at"`
-	UpdatedAt    time.Time    `json:"updated_at"`
-	Language     string       `json:"language"`
-	Details      string       `json:"details"`
-	Street       string       `json:"street"`
-	City         string       `json:"city"`
-	State        string       `json:"state"`
-	Pincode      int          `json:"pincode"`
-}

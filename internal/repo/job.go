@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/jmoiron/sqlx"
@@ -32,8 +33,8 @@ type JobStorer interface {
 
 // PostgreSQL Queries
 const (
-	createJobQuery                = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, NOW(), NOW()) RETURNING *;`
-	updateJobByIdQuery            = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, updated_at=NOW() where id=:id RETURNING *;`
+	createJobQuery                = `INSERT INTO jobs (employer_id, title, required_gender, location, description, duration_in_hours, skills_required, sectors, wage, vacancy, date, start_hour, end_hour, created_at, updated_at) VALUES (:employer_id, :title, :required_gender, :location, :description, :duration_in_hours, :skills_required, :sectors, :wage, :vacancy, :date, :start_hour, :end_hour, NOW(), NOW()) RETURNING *;`
+	updateJobByIdQuery            = `UPDATE jobs SET title=:title, required_gender=:required_gender, description=:description, duration_in_hours=:duration_in_hours, skills_required=:skills_required, sectors=:sectors, wage=:wage, vacancy=:vacancy, date=:date, start_hour=:start_hour, end_hour=:end_hour, updated_at=NOW() where id=:id RETURNING *;`
 	fetchJobByIdQuery             = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
 	deleteJobByIdQuery            = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
 	findJobByIdQuery              = `SELECT id FROM jobs WHERE id = $1;`
@@ -42,7 +43,7 @@ const (
 
 // Create New Job
 func (jobS *jobStore) CreateJob(ctx context.Context, jobData Job) (Job, error) {
-
+	fmt.Println(jobData)
 	var createdJob Job
 
 	addressData := Address{

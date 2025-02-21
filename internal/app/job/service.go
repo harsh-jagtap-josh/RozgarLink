@@ -32,9 +32,7 @@ func (js *jobService) CreateJob(ctx context.Context, jobData Job) (Job, error) {
 	if err != nil {
 		return Job{}, err
 	}
-
 	createdJob := MapJobRepoStructToService(job)
-
 	return createdJob, nil
 }
 
