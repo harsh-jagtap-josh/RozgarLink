@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/jmoiron/sqlx"
@@ -43,7 +42,6 @@ const (
 
 // Create New Job
 func (jobS *jobStore) CreateJob(ctx context.Context, jobData Job) (Job, error) {
-	fmt.Println(jobData)
 	var createdJob Job
 
 	addressData := Address{

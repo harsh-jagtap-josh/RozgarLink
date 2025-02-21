@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -88,7 +87,6 @@ func GetAddressByWorkerId(ctx context.Context, sqlxDb *sqlx.DB, workerId int) (A
 	err := sqlxDb.Get(&address, fetchAddressByWorkerIdQuery, workerId)
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return Address{}, err
 	}
 	return address, nil
