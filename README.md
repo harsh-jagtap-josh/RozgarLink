@@ -65,3 +65,78 @@ The platform simplifies the hiring process, ensures fair wages, and creates tran
 
 
 [RozgarLink_Postman](RozgarLink.postman_collection.json)
+
+
+## Project File Structure
+
+```
+├── cmd
+│   └── main.go
+├── internal
+│   ├── app
+│   │   ├── application
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   ├── helper.go
+│   │   │   └── service.go
+│   │   ├── auth
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   └── service.go
+│   │   ├── employer
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   ├── helper.go
+│   │   │   └── service.go
+│   │   ├── job
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   ├── helper.go
+│   │   │   └── service.go
+│   │   ├── sector
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   ├── helper.go
+│   │   │   └── service.go
+│   │   └── worker
+│   │   │   ├── domain.go
+│   │   │   ├── handler.go
+│   │   │   ├── helper.go
+│   │   │   └── service.go
+│   │   ├── dependencies.go
+│   │   └── router.go
+│   │
+│   ├── pkg
+│   │   ├── apperrors
+│   │   │   └── errors.go
+│   │   ├── logger
+│   │   │   └── logger.go
+│   │   ├── middleware
+│   │   │   ├── jwt.go
+│   │   │   └── middleware.go
+│   │   └── utils
+│   │       ├── bcrypt.go
+│   │       └── userValidation.go
+│   │
+│   └── repo
+│       ├── address.go
+│       ├── application.go
+│       ├── auth.go
+│       ├── base.go
+│       ├── domain.go
+│       ├── employer.go
+│       ├── helpers.go
+│       ├── job.go
+│       ├── sectors.go
+│       └── worker.go
+│
+├── docs
+│   ├── RozgarLink Documentation.docx
+│   └── sampleDoc.txt
+│
+├── config.go
+├── go.mod
+├── go.sum
+├── logfile
+└── README.md
+```
