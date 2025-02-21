@@ -84,7 +84,7 @@ func (jobS *jobStore) UpdateJobById(ctx context.Context, jobData Job) (Job, erro
 
 	address, err := GetAddressById(ctx, jobS.DB, jobData.Location)
 	if err != nil {
-		return Job{}, nil
+		return Job{}, err
 	}
 
 	isAddressChanged := !MatchAddressJob(address, jobData)

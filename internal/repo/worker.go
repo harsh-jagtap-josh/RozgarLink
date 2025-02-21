@@ -152,7 +152,7 @@ func (ws *workerStore) DeleteWorkerByID(ctx context.Context, workerId int) (int,
 	err := ws.DB.Get(&addressId, deleteWorkerByIdQuery, workerId)
 
 	if err != nil {
-		return -1, nil
+		return -1, err
 	}
 
 	err = DeleteAddress(ctx, ws.DB, addressId)

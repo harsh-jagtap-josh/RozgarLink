@@ -79,7 +79,7 @@ func (appS *applicationStore) UpdateApplicationByID(ctx context.Context, applica
 
 	address, err := GetAddressById(ctx, appS.DB, applicationData.PickUpLocation)
 	if err != nil {
-		return Application{}, nil
+		return Application{}, err
 	}
 
 	isAddressChanged := !MatchAddressApplication(address, applicationData)

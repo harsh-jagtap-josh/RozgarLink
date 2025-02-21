@@ -96,7 +96,7 @@ func (es *employerStore) UpdateEmployerById(ctx context.Context, employerData Em
 
 	address, err := GetAddressById(ctx, es.DB, employerData.Location)
 	if err != nil {
-		return Employer{}, nil
+		return Employer{}, err
 	}
 
 	isAddressChanged := !MatchAddressEmployer(address, employerData)

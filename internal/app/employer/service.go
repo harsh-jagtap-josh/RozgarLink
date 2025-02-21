@@ -85,7 +85,7 @@ func (empS *service) RegisterEmployer(ctx context.Context, employerData Employer
 	repoEmployerStruct := MapServiceToRepoDomain(employerData)
 	employer, err := empS.employerRepo.RegisterEmployer(ctx, repoEmployerStruct)
 	if err != nil {
-		return Employer{}, nil, nil
+		return Employer{}, err, apperrors.ErrCreateEmployer
 	}
 
 	newEmployer := MapRepoToServiceDomain(employer)

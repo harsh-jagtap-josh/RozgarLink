@@ -44,7 +44,7 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 	if len(user.Email) == 0 {
 		rows, err = authS.DB.NamedQuery(FetchEmployerByEmailQuery, loginData)
 		if err != nil {
-			return LoginUserData{}, nil
+			return LoginUserData{}, err
 		} else {
 			defer rows.Close()
 			if rows.Next() {
