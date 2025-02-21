@@ -1,6 +1,7 @@
 package employer
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,18 +19,12 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
-
-		vars := mux.Vars(r)
-		id := vars["employer_id"]
-		employerID, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		employerId, id := isEmployerIdValid(ctx, w, r)
+		if employerId == -1 {
 			return
 		}
 
-		employer, err := employerSvc.FetchEmployerByID(ctx, employerID)
+		employer, err := employerSvc.FetchEmployerByID(ctx, employerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoEmployerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -53,19 +48,14 @@ func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http
 
 		ctx := r.Context()
 
-		vars := mux.Vars(r)
-		id := vars["employer_id"]
-		_, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateEmployer.Error(), apperrors.MsgInvalidEmployerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		employerId, id := isEmployerIdValid(ctx, w, r)
+		if employerId == -1 {
 			return
 		}
 
 		var employerData Employer
 
-		err = json.NewDecoder(r.Body).Decode(&employerData)
+		err := json.NewDecoder(r.Body).Decode(&employerData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err), zap.String("ID", id))
 			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateEmployer.Error(), apperrors.ErrInvalidRequestBody.Error(), id)
@@ -137,17 +127,12 @@ func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http
 
 		ctx := r.Context()
 
-		vars := mux.Vars(r)
-		id := vars["employer_id"]
-		employerID, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteEmployer.Error(), apperrors.MsgInvalidEmployerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		employerId, id := isEmployerIdValid(ctx, w, r)
+		if employerId == -1 {
 			return
 		}
 
-		_, err = employerSvc.DeleteEmployerById(ctx, employerID)
+		_, err := employerSvc.DeleteEmployerById(ctx, employerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoEmployerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -170,17 +155,12 @@ func FetchJobsByEmployerId(es Service) func(w http.ResponseWriter, r *http.Reque
 
 		ctx := r.Context()
 
-		vars := mux.Vars(r)
-		id := vars["employer_id"]
-		employerID, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		employerId, id := isEmployerIdValid(ctx, w, r)
+		if employerId == -1 {
 			return
 		}
 
-		jobs, err := es.FetchJobsByEmployerId(ctx, employerID)
+		jobs, err := es.FetchJobsByEmployerId(ctx, employerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoEmployerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoEmployerExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -195,4 +175,18 @@ func FetchJobsByEmployerId(es Service) func(w http.ResponseWriter, r *http.Reque
 
 		middleware.HandleSuccessResponse(ctx, w, "successfully fetched jobs", http.StatusOK, jobs)
 	}
+}
+
+func isEmployerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
+
+	vars := mux.Vars(r)
+	id := vars["employer_id"]
+	employerID, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
+		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		return -1, id
+	}
+	return employerID, id
 }

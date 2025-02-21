@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -18,17 +19,12 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 
 		ctx := r.Context()
 
-		vars := mux.Vars(r)
-		id := vars["worker_id"]
-		workerID, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgInvalidWorkerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		workerId, id := isWorkerIdValid(ctx, w, r)
+		if workerId == -1 {
 			return
 		}
 
-		response, err := workerSvc.FetchWorkerByID(ctx, workerID)
+		response, err := workerSvc.FetchWorkerByID(ctx, workerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoWorkerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoWorkerExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -52,19 +48,14 @@ func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 		ctx := r.Context()
 		var workerData Worker
 
-		vars := mux.Vars(r)
-		id := vars["worker_id"]
-		_, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgInvalidWorkerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		workerId, id := isWorkerIdValid(ctx, w, r)
+		if workerId == -1 {
 			return
 		}
 
-		err = json.NewDecoder(r.Body).Decode(&workerData)
+		err := json.NewDecoder(r.Body).Decode(&workerData)
 		if err != nil {
-			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
+			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err), zap.String("ID", id))
 			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -91,18 +82,12 @@ func DeleteWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// retrieve id from query params
-		vars := mux.Vars(r)
-		id := vars["worker_id"]
-		workerId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgInvalidWorkerId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		workerId, id := isWorkerIdValid(ctx, w, r)
+		if workerId == -1 {
 			return
 		}
 
-		_, err = workerSvc.DeleteWorkerByID(ctx, workerId)
+		_, err := workerSvc.DeleteWorkerByID(ctx, workerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoWorkerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoWorkerExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -124,10 +109,11 @@ func FetchApplicationsByWorkerId(workerSvc Service) func(w http.ResponseWriter, 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		workerId, id := workerIsValid(w, r)
+		workerId, id := isWorkerIdValid(ctx, w, r)
 		if workerId == -1 {
 			return
 		}
+
 		applications, err := workerSvc.FetchApplicationsByWorkerId(ctx, workerId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoWorkerExists) {
@@ -145,9 +131,7 @@ func FetchApplicationsByWorkerId(workerSvc Service) func(w http.ResponseWriter, 
 	}
 }
 
-func workerIsValid(w http.ResponseWriter, r *http.Request) (int, string) {
-	ctx := r.Context()
-
+func isWorkerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
 	// retrieve id from query params
 	vars := mux.Vars(r)
 	id := vars["worker_id"]
@@ -160,5 +144,4 @@ func workerIsValid(w http.ResponseWriter, r *http.Request) (int, string) {
 	}
 
 	return workerId, id
-
 }

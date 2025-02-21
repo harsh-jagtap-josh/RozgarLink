@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -40,18 +41,13 @@ func CreateNewApplication(appService Service) func(w http.ResponseWriter, r *htt
 func UpdateApplicationByID(appService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["application_id"]
-		_, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidApplicationId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateApplication.Error(), apperrors.MsgInvalidApplicationId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		applicationId, _ := isApplicationIdValid(ctx, w, r)
+		if applicationId == -1 {
 			return
 		}
 
 		var applicationData Application
-		err = json.NewDecoder(r.Body).Decode(&applicationData)
+		err := json.NewDecoder(r.Body).Decode(&applicationData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
 			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+", "+err.Error(), http.StatusBadRequest)
@@ -72,13 +68,8 @@ func UpdateApplicationByID(appService Service) func(w http.ResponseWriter, r *ht
 func FetchApplicationByID(appService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["application_id"]
-		applicationId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidApplicationId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.MsgInvalidApplicationId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		applicationId, id := isApplicationIdValid(ctx, w, r)
+		if applicationId == -1 {
 			return
 		}
 
@@ -103,17 +94,13 @@ func FetchApplicationByID(appService Service) func(w http.ResponseWriter, r *htt
 func DeleteApplicationByID(appService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["application_id"]
-		applicationId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidApplicationId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.MsgInvalidApplicationId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+
+		applicationId, id := isApplicationIdValid(ctx, w, r)
+		if applicationId == -1 {
 			return
 		}
 
-		_, err = appService.DeleteApplicationById(ctx, applicationId)
+		_, err := appService.DeleteApplicationById(ctx, applicationId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoApplicationExists) {
 				logger.Errorw(ctx, apperrors.ErrNoApplicationExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -127,4 +114,17 @@ func DeleteApplicationByID(appService Service) func(w http.ResponseWriter, r *ht
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
+}
+
+func isApplicationIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
+	vars := mux.Vars(r)
+	id := vars["application_id"]
+	applicationId, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Errorw(ctx, apperrors.MsgInvalidApplicationId, zap.Error(err), zap.String("ID", id))
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.MsgInvalidApplicationId, id)
+		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		return -1, id
+	}
+	return applicationId, id
 }
