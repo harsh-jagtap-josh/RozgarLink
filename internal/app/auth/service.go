@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/middleware"
@@ -14,7 +15,7 @@ type service struct {
 }
 
 type Service interface {
-	Login(ctx context.Context, loginData LoginRequest) (LoginResponse, error, error)
+	Login(ctx context.Context, loginData LoginRequest) (LoginResponse, error)
 }
 
 func NewService(authRepo repo.AuthStorer) Service {
@@ -23,17 +24,13 @@ func NewService(authRepo repo.AuthStorer) Service {
 	}
 }
 
-func (authS *service) Login(ctx context.Context, loginData LoginRequest) (LoginResponse, error, error) {
+func (authS *service) Login(ctx context.Context, loginData LoginRequest) (LoginResponse, error) {
 
 	var resp LoginResponse
 
-	// Check in Workers table
 	user, err := authS.authRepo.Login(ctx, repo.LoginRequest(loginData))
 	if err != nil {
-		return LoginResponse{}, err, apperrors.ErrInvalidLoginCredentials
-	}
-	if user.Email == "" {
-		return LoginResponse{}, err, apperrors.ErrInvalidLoginCredentials
+		return LoginResponse{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidLoginCredentials, err)
 	}
 
 	resp.User = LoginUserData(user)
@@ -41,15 +38,15 @@ func (authS *service) Login(ctx context.Context, loginData LoginRequest) (LoginR
 	// check bcrypt password match
 	match := utils.CheckPasswordHash(loginData.Password, user.Password)
 	if !match {
-		return LoginResponse{}, err, apperrors.ErrInvalidLoginCredentials
+		return LoginResponse{}, fmt.Errorf("%w: %w", apperrors.ErrFailedLogin, apperrors.ErrIncorrectLoginData)
 	}
 
 	// create jwt
 	token, err := middleware.GenerateToken(user.ID, user.Role)
 	if err != nil {
-		return LoginResponse{}, err, apperrors.ErrCreateToken
+		return LoginResponse{}, fmt.Errorf("%w: %w", apperrors.ErrCreateToken, err)
 	}
 
 	resp.Token = token
-	return resp, nil, nil
+	return resp, nil
 }

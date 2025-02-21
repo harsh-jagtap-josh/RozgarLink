@@ -19,7 +19,7 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 
 		ctx := r.Context()
 
-		workerId, id := isWorkerIdValid(ctx, w, r)
+		workerId, id := isWorkerIdValid(ctx, w, r, errors.New(apperrors.MsgFailedToFetchWorker))
 		if workerId == -1 {
 			return
 		}
@@ -33,8 +33,8 @@ func FetchWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Requ
 				return
 			}
 
-			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDb, id)
+			logger.Errorw(ctx, apperrors.MsgFetchFromDbErr, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgFetchFromDbErr, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
@@ -48,7 +48,7 @@ func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 		ctx := r.Context()
 		var workerData Worker
 
-		workerId, id := isWorkerIdValid(ctx, w, r)
+		workerId, id := isWorkerIdValid(ctx, w, r, apperrors.ErrUpdateWorker)
 		if workerId == -1 {
 			return
 		}
@@ -56,21 +56,23 @@ func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 		err := json.NewDecoder(r.Body).Decode(&workerData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err), zap.String("ID", id))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateWorker.Error(), err.Error(), id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 			return
 		}
 
-		response, err, errType := workerSvc.UpdateWorkerByID(ctx, workerData)
+		response, err := workerSvc.UpdateWorkerByID(ctx, workerData)
 
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidUserDetails) {
-				logger.Errorw(ctx, errType.Error(), zap.Error(err))
-				http.Error(w, errType.Error()+", "+err.Error(), http.StatusBadRequest)
+				logger.Errorw(ctx, err.Error(), zap.Error(err))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateWorker.Error(), err.Error(), id)
+				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 				return
 			}
 
 			logger.Errorw(ctx, apperrors.ErrUpdateWorker.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrUpdateWorker.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrUpdateWorker.Error()+", "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -82,7 +84,7 @@ func DeleteWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		workerId, id := isWorkerIdValid(ctx, w, r)
+		workerId, id := isWorkerIdValid(ctx, w, r, apperrors.ErrDeleteWorker)
 		if workerId == -1 {
 			return
 		}
@@ -91,13 +93,14 @@ func DeleteWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoWorkerExists) {
 				logger.Errorw(ctx, apperrors.ErrNoWorkerExists.Error(), zap.Error(err), zap.String("ID", id))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.ErrNoWorkerExists.Error(), id)
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteWorker.Error(), apperrors.ErrNoWorkerExists.Error(), id)
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
 				return
 			}
 
 			logger.Errorw(ctx, apperrors.ErrDeleteWorker.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrDeleteWorker.Error()+","+err.Error(), http.StatusInternalServerError)
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteWorker.Error(), err.Error(), id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
 
@@ -109,7 +112,7 @@ func FetchApplicationsByWorkerId(workerSvc Service) func(w http.ResponseWriter, 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		workerId, id := isWorkerIdValid(ctx, w, r)
+		workerId, id := isWorkerIdValid(ctx, w, r, apperrors.ErrFetchApplication)
 		if workerId == -1 {
 			return
 		}
@@ -124,21 +127,21 @@ func FetchApplicationsByWorkerId(workerSvc Service) func(w http.ResponseWriter, 
 			}
 
 			logger.Errorw(ctx, apperrors.ErrFetchApplication.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrFetchApplication.Error()+","+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrFetchApplication.Error()+": "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		middleware.HandleSuccessResponse(ctx, w, "successfully fetched applications details", http.StatusOK, applications)
 	}
 }
 
-func isWorkerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
+func isWorkerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
 	// retrieve id from query params
 	vars := mux.Vars(r)
 	id := vars["worker_id"]
 	workerId, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Errorw(ctx, apperrors.MsgInvalidWorkerId, zap.Error(err), zap.String("ID", id))
-		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchWorker, apperrors.MsgInvalidWorkerId, id)
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(errType.Error(), apperrors.MsgInvalidWorkerId, id)
 		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 		return -1, ""
 	}

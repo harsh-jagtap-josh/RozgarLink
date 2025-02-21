@@ -14,6 +14,7 @@ var (
 	ErrMarshalPayload      = errors.New("error occured while writing error response")
 	ErrWriteHttpResposne   = errors.New("error occured while writing http response")
 	ErrEncrPassword        = errors.New("error occured while hashing password")
+	ErrIncorrectLoginData  = errors.New("incorrect email or password")
 	ErrCreateToken         = errors.New("failed to create jwt token")
 	ErrFailedLogin         = errors.New("failed to login user")
 
@@ -61,7 +62,7 @@ var (
 // Workers Error Messages
 const MsgConvertIdToInt = "error occurred while converting id to number"
 const MsgInvalidWorkerId = "invalid worker id provided"
-const MsgFetchFromDb = "error occurred while fetching from database"
+const MsgFetchFromDbErr = "error occurred while fetching from database"
 const MsgFailedToFetchWorker = "failed to fetch worker"
 const MsgFailedToCreateWorker = "failed to create worker"
 

@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
@@ -15,8 +16,8 @@ type service struct {
 
 type Service interface {
 	FetchWorkerByID(ctx context.Context, workerId int) (Worker, error)
-	CreateWorker(ctx context.Context, workerData Worker) (Worker, error, error)
-	UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error, error)
+	CreateWorker(ctx context.Context, workerData Worker) (Worker, error)
+	UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error)
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
 	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error)
 }
@@ -38,22 +39,22 @@ func (ws *service) FetchWorkerByID(ctx context.Context, workerId int) (Worker, e
 	return newWorker, nil
 }
 
-func (ws *service) CreateWorker(ctx context.Context, workerData Worker) (Worker, error, error) {
+func (ws *service) CreateWorker(ctx context.Context, workerData Worker) (Worker, error) {
 
 	// validate fields of user - can also be done in front-end itself
-	errType, err := utils.ValidateUser(workerData.Name, workerData.ContactNumber, workerData.Email, workerData.Password)
+	err := utils.ValidateUser(workerData.Name, workerData.ContactNumber, workerData.Email, workerData.Password)
 	if err != nil {
-		return Worker{}, err, errType
+		return Worker{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidUserDetails, err)
 	}
 
 	alreadyExists := ws.workerRepo.FindWorkerByEmail(ctx, workerData.Email)
 	if alreadyExists {
-		return Worker{}, apperrors.ErrWorkerAlreadyExists, nil
+		return Worker{}, apperrors.ErrWorkerAlreadyExists
 	}
 
 	hashed_password, err := utils.HashPassword(workerData.Password)
 	if err != nil {
-		return Worker{}, err, apperrors.ErrEncrPassword
+		return Worker{}, fmt.Errorf("%w: %w", apperrors.ErrEncrPassword, err)
 	}
 
 	workerData.Password = hashed_password
@@ -61,30 +62,30 @@ func (ws *service) CreateWorker(ctx context.Context, workerData Worker) (Worker,
 
 	newWorkerData, err := ws.workerRepo.CreateWorker(ctx, repoWorkerObj)
 	if err != nil {
-		return Worker{}, err, apperrors.ErrCreateWorker
+		return Worker{}, err
 	}
 
 	mappedWorkerData := MapRepoDomainToService(newWorkerData)
-	return mappedWorkerData, nil, nil
+	return mappedWorkerData, nil
 }
 
-func (ws *service) UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error, error) {
+func (ws *service) UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error) {
 
 	// validate all user fields in update same as register- can also be done in frontend itself
-	errType, err := utils.ValidateUpdateUser(workerData.Name, workerData.ContactNumber, workerData.Email)
+	err := utils.ValidateUpdateUser(workerData.Name, workerData.ContactNumber, workerData.Email)
 	if err != nil {
-		return Worker{}, err, errType
+		return Worker{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidUserDetails, err)
 	}
 
 	repoWorkerObj := MapServiceDomainToRepo(workerData)
 
 	newWorkerData, err := ws.workerRepo.UpdateWorkerByID(ctx, repoWorkerObj)
 	if err != nil {
-		return Worker{}, err, apperrors.ErrUpdateWorker
+		return Worker{}, fmt.Errorf("%w: %w", apperrors.ErrUpdateWorker, err)
 	}
 
 	mappedWorkerData := MapRepoDomainToService(newWorkerData)
-	return mappedWorkerData, nil, nil
+	return mappedWorkerData, nil
 }
 
 func (ws *service) DeleteWorkerByID(ctx context.Context, workerId int) (int, error) {

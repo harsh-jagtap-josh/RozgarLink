@@ -19,7 +19,7 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
-		employerId, id := isEmployerIdValid(ctx, w, r)
+		employerId, id := isEmployerIdValid(ctx, w, r, errors.New(apperrors.MsgFailedToFetchEmp))
 		if employerId == -1 {
 			return
 		}
@@ -33,8 +33,8 @@ func FetchEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http.
 				return
 			}
 
-			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgFetchFromDb, id)
+			logger.Errorw(ctx, apperrors.MsgFetchFromDbErr, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgFetchFromDbErr, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
@@ -48,7 +48,7 @@ func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http
 
 		ctx := r.Context()
 
-		employerId, id := isEmployerIdValid(ctx, w, r)
+		employerId, id := isEmployerIdValid(ctx, w, r, apperrors.ErrUpdateEmployer)
 		if employerId == -1 {
 			return
 		}
@@ -63,11 +63,11 @@ func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http
 			return
 		}
 
-		response, err, errType := employerSvc.UpdateEmployerById(ctx, employerData)
+		response, err := employerSvc.UpdateEmployerById(ctx, employerData)
 		if err != nil {
-			if errors.Is(errType, apperrors.ErrInvalidUserDetails) {
-				logger.Errorw(ctx, apperrors.ErrInvalidUserDetails.Error(), zap.Error(err))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrInvalidUserDetails.Error(), err.Error(), id)
+			if errors.Is(err, apperrors.ErrInvalidUserDetails) {
+				logger.Errorw(ctx, apperrors.ErrUpdateEmployer.Error(), zap.Error(err))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateEmployer.Error(), err.Error(), id)
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 				return
 			}
@@ -96,18 +96,18 @@ func RegisterEmployer(employerSvc Service) func(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		employer, err, errType := employerSvc.RegisterEmployer(ctx, employerData)
+		employer, err := employerSvc.RegisterEmployer(ctx, employerData)
 		if err != nil {
-			if errors.Is(errType, apperrors.ErrInvalidUserDetails) {
-				logger.Errorw(ctx, apperrors.ErrInvalidUserDetails.Error(), zap.Error(err))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrInvalidUserDetails.Error(), err.Error(), fmt.Sprintf("%d", employer.ID))
+			if errors.Is(err, apperrors.ErrInvalidUserDetails) {
+				logger.Errorw(ctx, apperrors.ErrCreateEmployer.Error(), zap.Error(err))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrCreateEmployer.Error(), err.Error(), fmt.Sprintf("%d", employer.ID))
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 				return
 			}
 
-			if errors.Is(errType, apperrors.ErrEmployerAlreadyExists) {
-				logger.Errorw(ctx, apperrors.ErrEmployerAlreadyExists.Error(), zap.Error(err), zap.String("email: ", employerData.Email))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrCreateEmployer.Error(), apperrors.ErrEmployerAlreadyExists.Error(), fmt.Sprintf("%d", employer.ID))
+			if errors.Is(err, apperrors.ErrEmployerAlreadyExists) {
+				logger.Errorw(ctx, apperrors.ErrCreateEmployer.Error(), zap.Error(err), zap.String("email: ", employerData.Email))
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrCreateEmployer.Error(), err.Error(), fmt.Sprintf("%d", employer.ID))
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusConflict)
 				return
 			}
@@ -127,7 +127,7 @@ func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http
 
 		ctx := r.Context()
 
-		employerId, id := isEmployerIdValid(ctx, w, r)
+		employerId, id := isEmployerIdValid(ctx, w, r, apperrors.ErrDeleteEmployer)
 		if employerId == -1 {
 			return
 		}
@@ -142,7 +142,8 @@ func DeleteEmployerByID(employerSvc Service) func(w http.ResponseWriter, r *http
 			}
 
 			logger.Errorw(ctx, apperrors.ErrDeleteEmployer.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrDeleteEmployer.Error()+","+err.Error(), http.StatusInternalServerError)
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteEmployer.Error(), err.Error(), id)
+			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
 
@@ -155,7 +156,7 @@ func FetchJobsByEmployerId(es Service) func(w http.ResponseWriter, r *http.Reque
 
 		ctx := r.Context()
 
-		employerId, id := isEmployerIdValid(ctx, w, r)
+		employerId, id := isEmployerIdValid(ctx, w, r, apperrors.ErrFetchJobs)
 		if employerId == -1 {
 			return
 		}
@@ -177,14 +178,14 @@ func FetchJobsByEmployerId(es Service) func(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func isEmployerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
+func isEmployerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
 
 	vars := mux.Vars(r)
 	id := vars["employer_id"]
 	employerID, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Errorw(ctx, apperrors.MsgInvalidEmployerId, zap.Error(err), zap.String("ID", id))
-		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchEmp, apperrors.MsgInvalidEmployerId, id)
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(errType.Error(), apperrors.MsgInvalidEmployerId, id)
 		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 		return -1, id
 	}

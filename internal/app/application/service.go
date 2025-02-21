@@ -2,6 +2,9 @@ package application
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/repo"
@@ -55,6 +58,9 @@ func (appS *applicationService) UpdateApplicationById(ctx context.Context, appli
 func (appS *applicationService) FetchApplicationById(ctx context.Context, applicationId int) (Application, error) {
 	application, err := appS.applicationRepo.FetchApplicationByID(ctx, applicationId)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Application{}, fmt.Errorf("%w, %w", apperrors.ErrNoApplicationExists, err)
+		}
 		return Application{}, err
 	}
 

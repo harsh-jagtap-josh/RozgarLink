@@ -1,6 +1,7 @@
 package sector
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -21,14 +22,14 @@ func CreateSector(sectorService Service) func(w http.ResponseWriter, r *http.Req
 		err := json.NewDecoder(r.Body).Decode(&sectorData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrInvalidRequestBody.Error()+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		createdSector, err := sectorService.CreateNewSector(ctx, sectorData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrCreateSector.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrCreateSector.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrCreateSector.Error()+": "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -39,13 +40,9 @@ func CreateSector(sectorService Service) func(w http.ResponseWriter, r *http.Req
 func FetchSectorById(sectorService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["sector_id"]
-		sectorId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidSectorId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchSector.Error(), apperrors.MsgInvalidSectorId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+
+		sectorId, id := isSectorIdValid(ctx, w, r, apperrors.ErrFetchSector)
+		if sectorId == -1 {
 			return
 		}
 
@@ -57,7 +54,7 @@ func FetchSectorById(sectorService Service) func(w http.ResponseWriter, r *http.
 				return
 			}
 
-			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
+			logger.Errorw(ctx, apperrors.MsgFetchFromDbErr, zap.Error(err), zap.String("ID", id))
 			middleware.HandleErrorResponse(ctx, w, apperrors.MsgFailedToFetchSector+", "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -69,21 +66,16 @@ func FetchSectorById(sectorService Service) func(w http.ResponseWriter, r *http.
 func UpdateSectorById(sectorService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["sector_id"]
-		sectorId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidSectorId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrUpdateSector.Error(), apperrors.MsgInvalidSectorId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		sectorId, _ := isSectorIdValid(ctx, w, r, apperrors.ErrUpdateSector)
+		if sectorId == -1 {
 			return
 		}
 
 		var sectorData Sector
-		err = json.NewDecoder(r.Body).Decode(&sectorData)
+		err := json.NewDecoder(r.Body).Decode(&sectorData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrInvalidRequestBody.Error()+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -91,7 +83,7 @@ func UpdateSectorById(sectorService Service) func(w http.ResponseWriter, r *http
 		updSector, err := sectorService.UpdateSectorById(ctx, sectorData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrUpdateSector.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrUpdateSector.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrUpdateSector.Error()+": "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -102,17 +94,12 @@ func UpdateSectorById(sectorService Service) func(w http.ResponseWriter, r *http
 func DeleteSectorById(sectorService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		vars := mux.Vars(r)
-		id := vars["sector_id"]
-		sectorId, err := strconv.Atoi(id)
-		if err != nil {
-			logger.Errorw(ctx, apperrors.MsgInvalidSectorId, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteSector.Error(), apperrors.MsgInvalidSectorId, id)
-			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		sectorId, id := isSectorIdValid(ctx, w, r, apperrors.ErrDeleteSector)
+		if sectorId == -1 {
 			return
 		}
 
-		_, err = sectorService.DeleteSectorById(ctx, sectorId)
+		_, err := sectorService.DeleteSectorById(ctx, sectorId)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoSectorExists) {
 				logger.Errorw(ctx, apperrors.ErrNoSectorExists.Error(), zap.Error(err), zap.String("ID", id))
@@ -139,4 +126,17 @@ func FetchAllSectors(sectorService Service) func(w http.ResponseWriter, r *http.
 		}
 		middleware.HandleSuccessResponse(ctx, w, "successfully fetched all sectors", http.StatusOK, sectors)
 	}
+}
+
+func isSectorIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
+	vars := mux.Vars(r)
+	id := vars["sector_id"]
+	sectorId, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Errorw(ctx, apperrors.MsgInvalidSectorId, zap.Error(err), zap.String("ID", id))
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(errType.Error(), apperrors.MsgInvalidSectorId, id)
+		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
+		return -1, id
+	}
+	return sectorId, id
 }

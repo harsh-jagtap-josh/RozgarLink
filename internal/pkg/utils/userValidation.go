@@ -3,8 +3,6 @@ package utils
 import (
 	"errors"
 	"regexp"
-
-	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 )
 
 // ValidateMobileNumber checks if the mobile number is exactly 10 digits. and only contains numbers
@@ -46,31 +44,31 @@ func ValidatePassword(password string) error {
 }
 
 // ValidateUser validates the Worker or Employer registration details.
-func ValidateUser(name, mobile, email, password string) (error, error) {
+func ValidateUser(name, mobile, email, password string) error {
 	if err := ValidateName(name); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
 	if err := ValidateMobileNumber(mobile); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
 	if err := ValidateEmail(email); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
 	if err := ValidatePassword(password); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
-	return nil, nil
+	return nil
 }
 
-func ValidateUpdateUser(name, mobile, email string) (error, error) {
+func ValidateUpdateUser(name, mobile, email string) error {
 	if err := ValidateName(name); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
 	if err := ValidateMobileNumber(mobile); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
 	if err := ValidateEmail(email); err != nil {
-		return apperrors.ErrInvalidUserDetails, err
+		return err
 	}
-	return nil, nil
+	return nil
 }

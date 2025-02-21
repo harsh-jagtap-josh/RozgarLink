@@ -2,6 +2,7 @@ package employer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
@@ -15,8 +16,8 @@ type service struct {
 
 type Service interface {
 	FetchEmployerByID(ctx context.Context, employerId int) (Employer, error)
-	UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error, error)
-	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error, error)
+	UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error)
+	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error)
 	DeleteEmployerById(ctx context.Context, employerId int) (int, error)
 	FetchJobsByEmployerId(ctx context.Context, employerId int) ([]job.Job, error)
 }
@@ -39,45 +40,45 @@ func (empS *service) FetchEmployerByID(ctx context.Context, employerId int) (Emp
 	return employer, nil
 }
 
-func (empS *service) UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error, error) {
+func (empS *service) UpdateEmployerById(ctx context.Context, employerData Employer) (Employer, error) {
 
 	var updatedEmployer Employer
 
-	errType, err := utils.ValidateUpdateUser(employerData.Name, employerData.ContactNo, employerData.Email)
+	err := utils.ValidateUpdateUser(employerData.Name, employerData.ContactNo, employerData.Email)
 	if err != nil {
-		return Employer{}, err, errType
+		return Employer{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidUserDetails, err)
 	}
 
 	repoEmployerData := MapServiceToRepoDomain(employerData)
 
 	updEmpRepo, err := empS.employerRepo.UpdateEmployerById(ctx, repoEmployerData)
 	if err != nil {
-		return Employer{}, err, apperrors.ErrUpdateEmployer
+		return Employer{}, err
 	}
 
 	updatedEmployer = MapRepoToServiceDomain(updEmpRepo)
 
-	return updatedEmployer, nil, nil
+	return updatedEmployer, nil
 }
 
-func (empS *service) RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error, error) {
+func (empS *service) RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error) {
 
 	// validate fields of user
-	errType, err := utils.ValidateUser(employerData.Name, employerData.ContactNo, employerData.Email, employerData.Password)
+	err := utils.ValidateUser(employerData.Name, employerData.ContactNo, employerData.Email, employerData.Password)
 	if err != nil {
-		return Employer{}, err, errType
+		return Employer{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidUserDetails, err)
 	}
 
 	// check if employer with email already exists
 	alreadyExists := empS.employerRepo.FindEmployerByEmail(ctx, employerData.Email)
 	if alreadyExists {
-		return Employer{}, apperrors.ErrCreateEmployer, apperrors.ErrEmployerAlreadyExists
+		return Employer{}, apperrors.ErrEmployerAlreadyExists
 	}
 
 	// create an encrypted password using bcrypt utility function
 	hashed_password, err := utils.HashPassword(employerData.Password)
 	if err != nil {
-		return Employer{}, err, apperrors.ErrEncrPassword
+		return Employer{}, fmt.Errorf("%w: %w", apperrors.ErrEncrPassword, err)
 	}
 	employerData.Password = hashed_password
 
@@ -85,11 +86,11 @@ func (empS *service) RegisterEmployer(ctx context.Context, employerData Employer
 	repoEmployerStruct := MapServiceToRepoDomain(employerData)
 	employer, err := empS.employerRepo.RegisterEmployer(ctx, repoEmployerStruct)
 	if err != nil {
-		return Employer{}, err, apperrors.ErrCreateEmployer
+		return Employer{}, err
 	}
 
 	newEmployer := MapRepoToServiceDomain(employer)
-	return newEmployer, nil, nil
+	return newEmployer, nil
 }
 
 func (empS *service) DeleteEmployerById(ctx context.Context, employerId int) (int, error) {

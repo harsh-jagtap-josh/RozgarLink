@@ -23,14 +23,14 @@ func CreateJob(js Service) func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+err.Error(), http.StatusBadRequest)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrInvalidRequestBody.Error()+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		createdJob, err := js.CreateJob(ctx, jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrCreateJob.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrCreateJob.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrCreateJob.Error()+": "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -41,7 +41,7 @@ func CreateJob(js Service) func(w http.ResponseWriter, r *http.Request) {
 func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		jobId, _ := isJobIdValid(ctx, w, r)
+		jobId, _ := isJobIdValid(ctx, w, r, apperrors.ErrUpdateJob)
 		if jobId == -1 {
 			return
 		}
@@ -51,14 +51,14 @@ func UpdateJobById(js Service) func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrInvalidRequestBody.Error()+", "+err.Error(), http.StatusBadRequest)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrInvalidRequestBody.Error()+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		updatedJob, err := js.UpdateJobByID(ctx, jobData)
 		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrUpdateJob.Error(), zap.Error(err))
-			http.Error(w, apperrors.ErrUpdateJob.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrUpdateJob.Error()+": "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -70,7 +70,7 @@ func FetchJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		jobId, id := isJobIdValid(ctx, w, r)
+		jobId, id := isJobIdValid(ctx, w, r, apperrors.ErrFetchJob)
 		if jobId == -1 {
 			return
 		}
@@ -84,8 +84,8 @@ func FetchJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			logger.Errorw(ctx, apperrors.MsgFetchFromDb, zap.Error(err), zap.String("ID", id))
-			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.MsgFetchFromDb, id)
+			logger.Errorw(ctx, apperrors.MsgFetchFromDbErr, zap.Error(err), zap.String("ID", id))
+			httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.MsgFetchFromDbErr, id)
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusInternalServerError)
 			return
 		}
@@ -98,7 +98,7 @@ func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		jobId, id := isJobIdValid(ctx, w, r)
+		jobId, id := isJobIdValid(ctx, w, r, apperrors.ErrDeleteJob)
 		if jobId == -1 {
 			return
 		}
@@ -107,7 +107,7 @@ func DeleteJobByID(js Service) func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNoJobExists) {
 				logger.Errorw(ctx, apperrors.ErrNoJobExists.Error(), zap.Error(err), zap.String("ID", id))
-				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.MsgFailedToFetchJob, apperrors.ErrNoJobExists.Error(), id)
+				httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrDeleteJob.Error(), apperrors.ErrNoJobExists.Error(), id)
 				middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusNotFound)
 				return
 			}
@@ -124,7 +124,7 @@ func FetchApplicationsByJobId(js Service) func(w http.ResponseWriter, r *http.Re
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		jobId, id := isJobIdValid(ctx, w, r)
+		jobId, id := isJobIdValid(ctx, w, r, apperrors.ErrFetchApplication)
 		if jobId == -1 {
 			return
 		}
@@ -147,13 +147,13 @@ func FetchApplicationsByJobId(js Service) func(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func isJobIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, string) {
+func isJobIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
 	vars := mux.Vars(r)
 	id := vars["job_id"]
 	jobId, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Errorw(ctx, apperrors.MsgInvalidJobId, zap.Error(err), zap.String("ID", id))
-		httpResponseMsg := apperrors.HttpErrorResponseMessage(apperrors.ErrFetchApplication.Error(), apperrors.MsgInvalidJobId, id)
+		httpResponseMsg := apperrors.HttpErrorResponseMessage(errType.Error(), apperrors.MsgInvalidJobId, id)
 		middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 		return -1, id
 	}
