@@ -147,6 +147,24 @@ func FetchApplicationsByJobId(js Service) func(w http.ResponseWriter, r *http.Re
 	}
 }
 
+func FetchAllJobs(jobService Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		queryParams := r.URL.Query()
+
+		jobFilters := retrieveQueryParams(queryParams)
+
+		jobs, err := jobService.FetchAllJobs(ctx, jobFilters)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.ErrFetchJobs.Error(), zap.Error(err))
+			middleware.HandleErrorResponse(ctx, w, apperrors.ErrFetchJobs.Error()+", "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "jobs retrieved successfully", http.StatusOK, jobs)
+	}
+}
+
 func isJobIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
 	vars := mux.Vars(r)
 	id := vars["job_id"]

@@ -49,6 +49,7 @@ func NewRouter(deps Dependencies) *mux.Router {
 	// Job Routes
 	jobRouter := router.PathPrefix("/job").Subrouter()
 	jobRouter.HandleFunc("/create", job.CreateJob(deps.JobService)).Methods(http.MethodPost)
+	jobRouter.HandleFunc("/all", job.FetchAllJobs(deps.JobService)).Methods(http.MethodGet)
 	jobRouter.HandleFunc(jobIdParam, job.FetchJobByID(deps.JobService)).Methods(http.MethodGet)
 	jobRouter.HandleFunc(jobIdParam, job.UpdateJobById(deps.JobService)).Methods(http.MethodPut)
 	jobRouter.HandleFunc(jobIdParam, job.DeleteJobByID(deps.JobService)).Methods(http.MethodDelete)

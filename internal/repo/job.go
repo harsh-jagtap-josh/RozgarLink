@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
 	"github.com/jmoiron/sqlx"
@@ -28,6 +29,7 @@ type JobStorer interface {
 	DeleteJobById(ctx context.Context, jobId int) (int, error)
 	FindJobById(ctx context.Context, jobId int) bool
 	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error)
+	FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error)
 }
 
 // PostgreSQL Queries
@@ -175,4 +177,59 @@ func (jobS *jobStore) FetchApplicationsByJobId(ctx context.Context, jobId int) (
 		return []Application{}, err
 	}
 	return applications, nil
+}
+
+func (jobS *jobStore) FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error) {
+	var jobs []Job
+	query := `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode FROM jobs INNER JOIN address ON jobs.location = address.id WHERE 1=1`
+	args := []interface{}{}
+	argIndex := 1
+
+	// Apply filters dynamically
+	if len(filters.Title) > 0 {
+		query += fmt.Sprintf(" AND jobs.title ILIKE $%d", argIndex)
+		args = append(args, "%"+filters.Title+"%")
+		argIndex++
+	}
+	if len(filters.Sector) > 0 {
+		query += fmt.Sprintf(" AND jobs.sectors ILIKE $%d", argIndex)
+		args = append(args, "%"+filters.Sector+"%")
+		argIndex++
+	}
+	if filters.WageMin > 0 {
+		query += fmt.Sprintf(" AND jobs.wage >= $%d", argIndex)
+		args = append(args, filters.WageMin)
+		argIndex++
+	}
+	if filters.WageMax > 0 {
+		query += fmt.Sprintf(" AND jobs.wage <= $%d", argIndex)
+		args = append(args, filters.WageMax)
+		argIndex++
+	}
+	if !filters.StartDate.IsZero() {
+		query += fmt.Sprintf(" AND jobs.date >= $%d", argIndex)
+		args = append(args, filters.StartDate)
+		argIndex++
+	}
+	if !filters.EndDate.IsZero() {
+		query += fmt.Sprintf(" AND jobs.date <= $%d", argIndex)
+		args = append(args, filters.EndDate)
+		argIndex++
+	}
+	if len(filters.City) > 0 {
+		query += fmt.Sprintf(" AND address.city ILIKE $%d", argIndex)
+		args = append(args, "%"+filters.City+"%")
+		argIndex++
+	}
+	if len(filters.Gender) > 0 {
+		query += fmt.Sprintf(" AND jobs.required_gender = $%d", argIndex)
+		args = append(args, filters.Gender)
+		argIndex++
+	}
+
+	err := jobS.DB.Select(&jobs, query, args...)
+	if err != nil {
+		return jobs, err
+	}
+	return jobs, nil
 }

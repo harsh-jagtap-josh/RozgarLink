@@ -18,6 +18,7 @@ type Service interface {
 	FetchJobByID(ctx context.Context, jobId int) (Job, error)
 	DeleteJobByID(ctx context.Context, jobId int) (int, error)
 	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.Application, error)
+	FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error)
 }
 
 func NewService(jobRepo repo.JobStorer) Service {
@@ -89,4 +90,19 @@ func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) (
 		fetchedApplication = append(fetchedApplication, application.MapRepoApplicationToService(appl))
 	}
 	return fetchedApplication, nil
+}
+
+func (js *jobService) FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error) {
+	filtersRepo := JobFilters(MapJobFilterServiceToRepo(filters))
+	jobs, err := js.jobRepo.FetchAllJobs(ctx, repo.JobFilters(filtersRepo))
+	
+	if err != nil {
+		return []Job{}, err
+	}
+	var fetchedJobs []Job
+	for _, job := range jobs {
+		fetchedJobs = append(fetchedJobs, MapJobRepoStructToService(job))
+	}
+	
+	return fetchedJobs, nil
 }

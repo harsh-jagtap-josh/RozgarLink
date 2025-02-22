@@ -151,3 +151,14 @@ type Sector struct {
 	Name        string `db:"name"`
 	Description string `db:"description"`
 }
+
+type JobFilters struct {
+	Title     string
+	Sector    string
+	WageMin   int
+	WageMax   int
+	StartDate time.Time
+	EndDate   time.Time
+	City      string
+	Gender    string
+}

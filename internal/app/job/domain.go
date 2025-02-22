@@ -24,3 +24,14 @@ type Job struct {
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
+
+type JobFilters struct {
+	Title     string
+	Sector    string
+	WageMin   int
+	WageMax   int
+	StartDate time.Time
+	EndDate   time.Time
+	City      string
+	Gender    string
+}
