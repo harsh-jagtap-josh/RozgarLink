@@ -70,5 +70,11 @@ func NewRouter(deps Dependencies) *mux.Router {
 	sectorRouter.HandleFunc(sectorIdParam, sector.UpdateSectorById(deps.SectorService)).Methods(http.MethodPut)
 	sectorRouter.HandleFunc(sectorIdParam, sector.DeleteSectorById(deps.SectorService)).Methods(http.MethodDelete)
 
+	// Routes to Fetch Complete Data - mostly only admin will have access to all this data
+	router.HandleFunc("/workers", worker.FetchAllWorkers(deps.WorkerService)).Methods(http.MethodGet)
+	router.HandleFunc("/employers", employer.FetchAllEmployers(deps.EmployerService)).Methods(http.MethodGet)
+	router.HandleFunc("/applications", application.FetchAllApplications(deps.ApplicationService)).Methods(http.MethodGet)
+	router.HandleFunc("/jobs", job.FetchAllJobs(deps.JobService)).Methods(http.MethodGet)
+
 	return router
 }

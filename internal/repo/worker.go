@@ -17,6 +17,7 @@ type WorkerStorer interface {
 	FindWorkerByEmail(ctx context.Context, email string) bool
 	FindWorkerById(ctx context.Context, id int) bool
 	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error)
+	FetchAllWorkers(ctx context.Context) ([]Worker, error)
 }
 
 type workerStore struct {
@@ -38,6 +39,7 @@ const (
 	findEmailExistsQuery             = "SELECT id FROM workers WHERE email = $1;"
 	findIdExistsQuery                = "SELECT id FROM workers WHERE id = $1;"
 	fetchApplicationsByWorkerIdQuery = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode FROM applications inner join address on applications.pick_up_location = address.id WHERE applications.worker_id = $1`
+	fetchAllWorkersQuery             = `SELECT workers.*, address.details, address.street, address.city, address.state, address.pincode FROM workers inner join address on workers.location = address.id;`
 )
 
 // Create a New Worker
@@ -188,4 +190,14 @@ func (ws *workerStore) FetchApplicationsByWorkerId(ctx context.Context, workerId
 		return []Application{}, err
 	}
 	return applications, nil
+}
+
+func (ws *workerStore) FetchAllWorkers(ctx context.Context) ([]Worker, error) {
+	workers := make([]Worker, 0)
+	err := ws.DB.Select(&workers, fetchAllWorkersQuery)
+	if err != nil {
+		return []Worker{}, err
+	}
+	return workers, nil
+
 }

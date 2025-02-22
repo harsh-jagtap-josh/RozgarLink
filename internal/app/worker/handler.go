@@ -148,3 +148,17 @@ func isWorkerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request
 
 	return workerId, id
 }
+
+func FetchAllWorkers(ws Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		workers, err := ws.FetchAllWorkers(ctx)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgFailedToFetchWorker, zap.Error(err))
+			middleware.HandleErrorResponse(ctx, w, apperrors.MsgFailedToFetchWorker+", "+err.Error(), http.StatusInternalServerError)
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully fetched workers data", http.StatusOK, workers)
+	}
+}

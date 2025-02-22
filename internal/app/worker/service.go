@@ -20,6 +20,7 @@ type Service interface {
 	UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error)
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
 	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error)
+	FetchAllWorkers(ctx context.Context) ([]Worker, error)
 }
 
 func NewService(workerRepo repo.WorkerStorer) Service {
@@ -118,4 +119,17 @@ func (ws *service) FetchApplicationsByWorkerId(ctx context.Context, workerId int
 	}
 
 	return fetchedApplications, nil
+}
+
+func (ws *service) FetchAllWorkers(ctx context.Context) ([]Worker, error) {
+	workers, err := ws.workerRepo.FetchAllWorkers(ctx)
+	if err != nil {
+		return []Worker{}, err
+	}
+
+	fetchedWorkers := make([]Worker, 0)
+	for _, worker := range workers {
+		fetchedWorkers = append(fetchedWorkers, MapRepoDomainToService(worker))
+	}
+	return fetchedWorkers, nil
 }

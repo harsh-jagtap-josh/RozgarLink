@@ -191,3 +191,17 @@ func isEmployerIdValid(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 	return employerID, id
 }
+
+func FetchAllEmployers(empS Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		employers, err := empS.FetchAllEmployers(ctx)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgFailedToFetchEmp, zap.Error(err))
+			middleware.HandleErrorResponse(ctx, w, apperrors.MsgFailedToFetchEmp+", "+err.Error(), http.StatusInternalServerError)
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "successfully fetched employers data", http.StatusOK, employers)
+	}
+}

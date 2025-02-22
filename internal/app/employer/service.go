@@ -20,6 +20,7 @@ type Service interface {
 	RegisterEmployer(ctx context.Context, employerData Employer) (Employer, error)
 	DeleteEmployerById(ctx context.Context, employerId int) (int, error)
 	FetchJobsByEmployerId(ctx context.Context, employerId int) ([]job.Job, error)
+	FetchAllEmployers(ctx context.Context) ([]Employer, error)
 }
 
 func NewService(employerRepo repo.EmployerStorer) Service {
@@ -121,4 +122,18 @@ func (es *service) FetchJobsByEmployerId(ctx context.Context, employerId int) ([
 		mappedJobs = append(mappedJobs, job.MapJobRepoStructToService(newJob))
 	}
 	return mappedJobs, nil
+}
+
+func (es *service) FetchAllEmployers(ctx context.Context) ([]Employer, error) {
+	employers, err := es.employerRepo.FetchAllEmployers(ctx)
+	if err != nil {
+		return []Employer{}, err
+	}
+
+	fetchedEmployers := make([]Employer, 0)
+	for _, emp := range employers {
+		fetchedEmployers = append(fetchedEmployers, MapRepoToServiceDomain(emp))
+	}
+
+	return fetchedEmployers, nil
 }

@@ -19,6 +19,7 @@ type ApplicationStorer interface {
 	FetchApplicationByID(ctx context.Context, applicationId int) (Application, error)
 	DeleteApplicationByID(ctx context.Context, applicationId int) (int, error)
 	FindApplicationById(ctx context.Context, applicationId int) bool
+	FetchAllApplications(ctx context.Context) ([]Application, error)
 }
 
 func NewApplicationRepo(db *sqlx.DB) ApplicationStorer {
@@ -34,6 +35,7 @@ const (
 	fethcApplicationByIdQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
 	deleteApplicationByIdQuery = `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
 	findApplicationByIdQuery   = `SELECT id FROM applications WHERE id = $1;`
+	fetchAllApplicationsQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id;`
 )
 
 func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicationData Application) (Application, error) {
@@ -155,4 +157,14 @@ func (appS *applicationStore) FindApplicationById(ctx context.Context, applicati
 	var ID int
 	err := appS.DB.QueryRow(findApplicationByIdQuery, applicationId).Scan(&ID)
 	return err == nil
+}
+
+func (appS *applicationStore) FetchAllApplications(ctx context.Context) ([]Application, error) {
+
+	applications := make([]Application, 0)
+	err := appS.DB.Select(&applications, fetchAllApplicationsQuery)
+	if err != nil {
+		return []Application{}, err
+	}
+	return applications, nil
 }

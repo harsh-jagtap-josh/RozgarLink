@@ -114,6 +114,20 @@ func DeleteApplicationByID(appService Service) func(w http.ResponseWriter, r *ht
 	}
 }
 
+func FetchAllApplications(jobService Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		applications, err := jobService.FetchAllApplications(ctx)
+		if err != nil {
+			logger.Errorw(ctx, apperrors.MsgFailedToFetchApplication, zap.Error(err))
+			middleware.HandleErrorResponse(ctx, w, apperrors.MsgFailedToFetchApplication+", "+err.Error(), http.StatusInternalServerError)
+		}
+
+		middleware.HandleSuccessResponse(ctx, w, "applications retrieved successfully", http.StatusOK, applications)
+	}
+}
+
 func isApplicationIdValid(ctx context.Context, w http.ResponseWriter, r *http.Request, errType error) (int, string) {
 	vars := mux.Vars(r)
 	id := vars["application_id"]

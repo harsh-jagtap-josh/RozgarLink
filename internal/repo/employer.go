@@ -17,6 +17,7 @@ type EmployerStorer interface {
 	FindEmployerByEmail(ctx context.Context, employerEmail string) bool
 	FindEmployerById(ctx context.Context, employerId int) bool
 	FindJobByEmployerId(ctx context.Context, employerId int) ([]Job, error)
+	FetchAllEmployers(ctx context.Context) ([]Employer, error)
 }
 
 // PostgreSQL Queries
@@ -28,6 +29,7 @@ const (
 	findEmployerByEmailQuery   = `SELECT id from employers where email=$1;`
 	findEmployerByIDQuery      = `SELECT id from employers where id=$1;`
 	fetchJobsByIdEmployerQuery = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.employer_id = $1;`
+	fetchAllEmployersQuery     = `SELECT * FROM employers;`
 )
 
 type employerStore struct {
@@ -173,4 +175,14 @@ func (es *employerStore) FindJobByEmployerId(ctx context.Context, employerId int
 		return []Job{}, err
 	}
 	return jobs, nil
+}
+
+func (es *employerStore) FetchAllEmployers(ctx context.Context) ([]Employer, error) {
+	employers := make([]Employer, 0)
+	err := es.DB.Select(&employers, fetchAllEmployersQuery)
+	if err != nil {
+		return []Employer{}, err
+	}
+	return employers, nil
+
 }
