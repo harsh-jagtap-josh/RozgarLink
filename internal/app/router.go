@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/admin"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
@@ -12,7 +13,7 @@ import (
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 )
 
-// Query Params
+// Query Params Constants
 const (
 	workerIdParam      = "/{worker_id}"
 	employerIdParam    = "/{employer_id}"
@@ -29,6 +30,11 @@ func NewRouter(deps Dependencies) *mux.Router {
 	router.HandleFunc("/login", auth.HandleLogin(deps.AuthService)).Methods(http.MethodPost)
 	router.HandleFunc("/register/worker", auth.RegisterWorker(deps.WorkerService)).Methods(http.MethodPost)
 	router.HandleFunc("/register/employer", employer.RegisterEmployer(deps.EmployerService)).Methods(http.MethodPost)
+
+	adminRouter := router.PathPrefix("").Subrouter()
+	// adminRouter.Use(middleware.RequireSuperAdminRole)
+	adminRouter.HandleFunc("/register/admin", admin.RegisterAdmin(deps.AdminService)).Methods(http.MethodPost) // Only for Super Admin, create a new subrouter for this (so that only this route will have the validation of a super-admin) - may have to create a new jwt function to validate only super-admins
+	
 
 	// Worker Routes - protected routes
 	workerRouter := router.PathPrefix("/worker").Subrouter()

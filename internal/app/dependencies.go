@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/admin"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/auth"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/employer"
@@ -18,6 +19,7 @@ type Dependencies struct {
 	JobService         job.Service
 	ApplicationService application.Service
 	SectorService      sector.Service
+	AdminService       admin.AdminService
 }
 
 func NewServices(db *sqlx.DB) Dependencies {
@@ -27,6 +29,7 @@ func NewServices(db *sqlx.DB) Dependencies {
 	JobRepo := repo.NewJobRepo(db)
 	ApplicationRepo := repo.NewApplicationRepo(db)
 	SectorRepo := repo.NewSectorRepo(db)
+	AdminRepo := repo.NewAdminRepo(db)
 
 	workerService := worker.NewService(WorkerRepo)
 	authService := auth.NewService(AuthRepo)
@@ -34,6 +37,7 @@ func NewServices(db *sqlx.DB) Dependencies {
 	jobService := job.NewService(JobRepo)
 	applicationService := application.NewService(ApplicationRepo)
 	sectorService := sector.NewService(SectorRepo)
+	adminService := admin.NewAdminService(AdminRepo)
 
 	return Dependencies{
 		WorkerService:      workerService,
@@ -42,5 +46,6 @@ func NewServices(db *sqlx.DB) Dependencies {
 		JobService:         jobService,
 		ApplicationService: applicationService,
 		SectorService:      sectorService,
+		AdminService:       adminService,
 	}
 }

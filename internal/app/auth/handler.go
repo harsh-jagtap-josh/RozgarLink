@@ -67,7 +67,7 @@ func HandleLogin(authService Service) func(w http.ResponseWriter, r *http.Reques
 			}
 
 			logger.Errorw(ctx, apperrors.ErrFailedLogin.Error(), zap.Error(err))
-			middleware.HandleErrorResponse(ctx, w, apperrors.ErrFailedLogin.Error()+", "+err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 

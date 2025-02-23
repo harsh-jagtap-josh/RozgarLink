@@ -162,3 +162,13 @@ type JobFilters struct {
 	City      string
 	Gender    string
 }
+
+type Admin struct {
+	Name      string    `db:"name"`
+	ContactNo string    `db:"contact_no"`
+	Email     string    `db:"email"`
+	Password  string    `db:"password"`
+	Role      string    `db:"role"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}

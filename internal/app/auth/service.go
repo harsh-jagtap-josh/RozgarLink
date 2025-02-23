@@ -25,7 +25,6 @@ func NewService(authRepo repo.AuthStorer) Service {
 }
 
 func (authS *service) Login(ctx context.Context, loginData LoginRequest) (LoginResponse, error) {
-
 	var resp LoginResponse
 
 	user, err := authS.authRepo.Login(ctx, repo.LoginRequest(loginData))
@@ -33,7 +32,12 @@ func (authS *service) Login(ctx context.Context, loginData LoginRequest) (LoginR
 		return LoginResponse{}, fmt.Errorf("%w: %w", apperrors.ErrInvalidLoginCredentials, err)
 	}
 
-	resp.User = LoginUserData(user)
+	resp.User = LoginUserData{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
+	}
 
 	// check bcrypt password match
 	match := utils.CheckPasswordHash(loginData.Password, user.Password)

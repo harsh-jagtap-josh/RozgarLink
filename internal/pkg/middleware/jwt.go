@@ -43,20 +43,20 @@ func ValidateJWT(next http.Handler) http.Handler {
 		err := godotenv.Load()
 		if err != nil {
 			logger.Errorw(ctx, "error occured while loading env")
-			http.Error(w, "failed to fetch env - "+err.Error(), http.StatusInternalServerError)
+			HandleErrorResponse(ctx, w, "failed to fetch env - "+err.Error(), http.StatusInternalServerError)
 		}
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			logger.Errorw(ctx, "missing authorization token", zap.String("URL", r.URL.Path), zap.String("Method", r.Method))
-			http.Error(w, "missing token", http.StatusUnauthorized)
+			HandleErrorResponse(ctx, w, "missing token", http.StatusUnauthorized)
 			return
 		}
 
 		tokenStr := strings.Split(authHeader, "Bearer ")
 		if len(tokenStr) != 2 {
 			logger.Errorw(ctx, "invalid authorization token format", zap.String("URL", r.URL.Path), zap.String("Method", r.Method))
-			http.Error(w, "invalid token format", http.StatusUnauthorized)
+			HandleErrorResponse(ctx, w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
@@ -68,7 +68,7 @@ func ValidateJWT(next http.Handler) http.Handler {
 
 		if err != nil || !token.Valid {
 			logger.Errorw(ctx, "invalid authorization token", zap.String("URL", r.URL.Path), zap.String("Method", r.Method))
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			HandleErrorResponse(ctx, w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
@@ -76,7 +76,7 @@ func ValidateJWT(next http.Handler) http.Handler {
 		data, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			logger.Errorw(ctx, "invalid jwt data", zap.String("URL", r.URL.Path), zap.String("Method", r.Method))
-			http.Error(w, "invalid token data", http.StatusUnauthorized)
+			HandleErrorResponse(ctx, w, "invalid token data", http.StatusUnauthorized)
 			return
 		}
 
@@ -91,7 +91,7 @@ func RequireWorkerRole(next http.Handler) http.Handler {
 		userRole := r.Context().Value("role")
 		if userRole != "worker" {
 			logger.Errorw(r.Context(), "unauthorized access", zap.String("required_role", "worker"))
-			http.Error(w, "unauthorized access to api", http.StatusForbidden)
+			HandleErrorResponse(r.Context(), w, "unauthorized access to api", http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -101,9 +101,33 @@ func RequireWorkerRole(next http.Handler) http.Handler {
 func RequireEmployerRole(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userRole := r.Context().Value("role")
-		if userRole != "worker" {
+		if userRole != "employer" {
+			logger.Errorw(r.Context(), "unauthorized access", zap.String("required_role", "employer"))
+			HandleErrorResponse(r.Context(), w, "unauthorized access to api", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RequireAdminRole(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userRole := r.Context().Value("role")
+		if userRole != "admin" {
+			logger.Errorw(r.Context(), "unauthorized access", zap.String("required_role", "admin"))
+			HandleErrorResponse(r.Context(), w, "unauthorized access to api", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RequireSuperAdminRole(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userRole := r.Context().Value("role")
+		if userRole != "super-admin" {
 			logger.Errorw(r.Context(), "unauthorized access", zap.String("required_role", "worker"))
-			http.Error(w, "unauthorized access to api", http.StatusForbidden)
+			HandleErrorResponse(r.Context(), w, "unauthorized access to api", http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -124,14 +148,14 @@ func RequireSameUserOrAdmin(next http.Handler) http.Handler {
 		paramID, err := strconv.Atoi(vars[role+"_id"])
 		if err != nil {
 			logger.Errorw(r.Context(), "invalid user id provided", zap.Error(err), zap.String("id", vars[role+"_id"]))
-			http.Error(w, "invalid user id - "+err.Error(), http.StatusBadRequest)
+			HandleErrorResponse(r.Context(), w, "invalid user id - "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		// allow access only if it the user itself trying to access its data or its the Admin
 		if role != "admin" && authUserID != paramID {
 			logger.Errorw(r.Context(), "access forbidden")
-			http.Error(w, "forbidden: you are not authorized", http.StatusForbidden)
+			HandleErrorResponse(r.Context(), w, "forbidden: you are not authorized", http.StatusForbidden)
 			return
 		}
 

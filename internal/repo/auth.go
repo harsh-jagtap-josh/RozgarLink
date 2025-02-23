@@ -21,13 +21,14 @@ func NewAuthRepo(db *sqlx.DB) AuthStorer {
 	}
 }
 
-const FetchWorkerByEmailQuery = "SELECT id, name, email, password FROM workers WHERE email=:email;"
-const FetchEmployerByEmailQuery = "SELECT id, name, email, password FROM employers WHERE email=:email;"
+const fetchWorkerByEmailQuery = "SELECT id, name, email, password FROM workers WHERE email=:email;"
+const fetchEmployerByEmailQuery = "SELECT id, name, email, password FROM employers WHERE email=:email;"
+const fetchAdminByEmailQuery = "SELECT id, name, email, password, role FROM admins where email=:email;"
 
 func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (LoginUserData, error) {
 	var user LoginUserData
 
-	rows, err := authS.DB.NamedQuery(FetchWorkerByEmailQuery, loginData)
+	rows, err := authS.DB.NamedQuery(fetchWorkerByEmailQuery, loginData)
 	if err != nil {
 		return LoginUserData{}, err
 	} else {
@@ -42,7 +43,7 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 		}
 	}
 	if len(user.Email) == 0 {
-		rows, err = authS.DB.NamedQuery(FetchEmployerByEmailQuery, loginData)
+		rows, err = authS.DB.NamedQuery(fetchEmployerByEmailQuery, loginData)
 		if err != nil {
 			return LoginUserData{}, err
 		} else {
@@ -53,6 +54,20 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 					return LoginUserData{}, apperrors.ErrInvalidLoginCredentials
 				} else {
 					user.Role = "employer"
+				}
+			}
+		}
+	}
+	if len(user.Email) == 0 {
+		rows, err = authS.DB.NamedQuery(fetchAdminByEmailQuery, loginData)
+		if err != nil {
+			return LoginUserData{}, err
+		} else {
+			defer rows.Close()
+			if rows.Next() {
+				err = rows.StructScan(&user)
+				if err != nil {
+					return LoginUserData{}, apperrors.ErrInvalidLoginCredentials
 				}
 			}
 		}
