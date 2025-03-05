@@ -19,7 +19,7 @@ type Service interface {
 	UpdateApplicationById(ctx context.Context, applicationData Application) (Application, error)
 	FetchApplicationById(ctx context.Context, applicationId int) (Application, error)
 	DeleteApplicationById(ctx context.Context, applicationId int) (int, error)
-	FetchAllApplications(ctx context.Context) ([]Application, error)
+	FetchAllApplications(ctx context.Context) ([]ApplicationComplete, error)
 }
 
 func NewService(applicationRepo repo.ApplicationStorer) Service {
@@ -82,14 +82,16 @@ func (appS *applicationService) DeleteApplicationById(ctx context.Context, appli
 	return id, nil
 }
 
-func (appS *applicationService) FetchAllApplications(ctx context.Context) ([]Application, error) {
+func (appS *applicationService) FetchAllApplications(ctx context.Context) ([]ApplicationComplete, error) {
 	applications, err := appS.applicationRepo.FetchAllApplications(ctx)
 	if err != nil {
-		return []Application{}, err
+		return []ApplicationComplete{}, err
 	}
-	fetchedApplications := make([]Application, 0)
+
+	fetchedApplications := make([]ApplicationComplete, 0)
 	for _, appl := range applications {
-		fetchedApplications = append(fetchedApplications, MapRepoApplicationToService(appl))
+		fetchedApplications = append(fetchedApplications, MapRepoApplCompToService(appl))
 	}
+
 	return fetchedApplications, nil
 }

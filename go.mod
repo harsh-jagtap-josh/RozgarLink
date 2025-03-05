@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/rs/cors v1.11.1
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.33.0
 )

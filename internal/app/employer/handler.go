@@ -62,7 +62,7 @@ func UpdateEmployerById(employerSvc Service) func(w http.ResponseWriter, r *http
 			middleware.HandleErrorResponse(ctx, w, httpResponseMsg, http.StatusBadRequest)
 			return
 		}
-
+		employerData.ID = employerId
 		response, err := employerSvc.UpdateEmployerById(ctx, employerData)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidUserDetails) {

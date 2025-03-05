@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/rs/cors"
+
 	db "github.com/harsh-jagtap-josh/RozgarLink"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/logger"
@@ -33,10 +35,17 @@ func main() {
 	services := app.NewServices(sqlDB)
 	router := app.NewRouter(services)
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*", "http://localhost:5173"},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut},
+		AllowCredentials: true,
+	})
+	handler := cors.Default().Handler(router)
+
 	port := os.Getenv("PORT")
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%v", port),
-		Handler: router,
+		Handler: c.Handler(handler),
 	}
 
 	logger.Infow(ctx, "Server up and running", zap.String("port", string(port)))

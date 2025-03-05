@@ -28,7 +28,7 @@ type JobStorer interface {
 	FetchJobById(ctx context.Context, jobId int) (Job, error)
 	DeleteJobById(ctx context.Context, jobId int) (int, error)
 	FindJobById(ctx context.Context, jobId int) bool
-	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error)
+	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]ApplicationCompleteEmp, error)
 	FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error)
 }
 
@@ -39,7 +39,7 @@ const (
 	fetchJobByIdQuery             = `SELECT jobs.*, address.details, address.street, address.city, address.state, address.pincode from jobs inner join address on jobs.location = address.id where jobs.id = $1;`
 	deleteJobByIdQuery            = `DELETE FROM jobs WHERE id=$1 RETURNING location;`
 	findJobByIdQuery              = `SELECT id FROM jobs WHERE id = $1;`
-	fetchApplicationsByJobIdQuery = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode FROM applications inner join address on applications.pick_up_location = address.id WHERE applications.job_id = $1`
+	fetchApplicationsByJobIdQuery = `select applications.*, address.details, address.street, address.state, address.city, address.pincode, jobs.title, jobs.description, jobs.skills_required, jobs.sectors, jobs.wage, jobs.vacancy, jobs.date, workers.name, workers.contact_number, workers.email, workers.gender from applications inner join address on applications.pick_up_location = address.id inner join jobs on applications.job_id = jobs.id inner join workers on applications.worker_id = workers.id where applications.job_id = $1;`
 )
 
 // Create New Job
@@ -168,14 +168,15 @@ func (jobS *jobStore) FindJobById(ctx context.Context, jobId int) bool {
 }
 
 // fetch job applications
-func (jobS *jobStore) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]Application, error) {
+func (jobS *jobStore) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]ApplicationCompleteEmp, error) {
 
-	var applications []Application
+	var applications []ApplicationCompleteEmp
 
 	err := jobS.DB.Select(&applications, fetchApplicationsByJobIdQuery, jobId)
 	if err != nil {
-		return []Application{}, err
+		return []ApplicationCompleteEmp{}, err
 	}
+
 	return applications, nil
 }
 

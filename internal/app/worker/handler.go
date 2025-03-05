@@ -61,6 +61,7 @@ func UpdateWorkerByID(workerSvc Service) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
+		workerData.ID = workerId
 		response, err := workerSvc.UpdateWorkerByID(ctx, workerData)
 
 		if err != nil {

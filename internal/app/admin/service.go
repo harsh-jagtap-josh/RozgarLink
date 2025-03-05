@@ -15,6 +15,7 @@ type service struct {
 
 type AdminService interface {
 	RegisterAdmin(ctx context.Context, adminData Admin) (Admin, error)
+	DeleteAdmin(ctx context.Context, adminId int) error
 }
 
 func NewAdminService(adminRepo repo.AdminStorer) AdminService {
@@ -47,4 +48,16 @@ func (adminS *service) RegisterAdmin(ctx context.Context, adminData Admin) (Admi
 	}
 
 	return Admin(createdAdmin), nil
+}
+
+func (adminS *service) DeleteAdmin(ctx context.Context, adminId int) error {
+	exists := adminS.adminRepo.FindAdminById(ctx, adminId)
+	if !exists {
+		return apperrors.ErrNoAdminExists
+	}
+	err := adminS.adminRepo.DeleteAdmin(ctx, adminId)
+	if err != nil {
+		return err
+	}
+	return nil
 }

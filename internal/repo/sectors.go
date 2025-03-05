@@ -33,7 +33,7 @@ const (
 	fetchSectorByIdQuery  = `SELECT * FROM sectors where id=$1;`
 	updateSectorByIdQuery = `UPDATE sectors SET name=:name, description=:description where id=:id RETURNING *;`
 	deleteSectorByIdQuery = `DELETE FROM sectors WHERE id=$1 RETURNING id;`
-	fetchAllSectorQuery   = `SELECT * FROM sectors;`
+	fetchAllSectorQuery   = `SELECT * FROM sectors ORDER BY id;`
 )
 
 func (sectorS *sectorStore) CreateNewSector(ctx context.Context, sectorData Sector) (Sector, error) {

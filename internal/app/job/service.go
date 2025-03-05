@@ -17,7 +17,7 @@ type Service interface {
 	UpdateJobByID(ctx context.Context, jobData Job) (Job, error)
 	FetchJobByID(ctx context.Context, jobId int) (Job, error)
 	DeleteJobByID(ctx context.Context, jobId int) (int, error)
-	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.Application, error)
+	FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.ApplicationCompleteEmp, error)
 	FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error)
 }
 
@@ -74,20 +74,20 @@ func (js *jobService) DeleteJobByID(ctx context.Context, jobId int) (int, error)
 	return id, nil
 }
 
-func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.Application, error) {
+func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) ([]application.ApplicationCompleteEmp, error) {
 	exists := js.jobRepo.FindJobById(ctx, jobId)
 	if !exists {
-		return []application.Application{}, apperrors.ErrNoJobExists
+		return []application.ApplicationCompleteEmp{}, apperrors.ErrNoJobExists
 	}
 
 	applications, err := js.jobRepo.FetchApplicationsByJobId(ctx, jobId)
 	if err != nil {
-		return []application.Application{}, err
+		return []application.ApplicationCompleteEmp{}, err
 	}
 
-	var fetchedApplication []application.Application
+	var fetchedApplication []application.ApplicationCompleteEmp
 	for _, appl := range applications {
-		fetchedApplication = append(fetchedApplication, application.MapRepoApplicationToService(appl))
+		fetchedApplication = append(fetchedApplication, application.MapRepoApplCompEmpToService(appl))
 	}
 	return fetchedApplication, nil
 }
@@ -95,7 +95,7 @@ func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) (
 func (js *jobService) FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error) {
 	filtersRepo := JobFilters(MapJobFilterServiceToRepo(filters))
 	jobs, err := js.jobRepo.FetchAllJobs(ctx, repo.JobFilters(filtersRepo))
-	
+
 	if err != nil {
 		return []Job{}, err
 	}
@@ -103,6 +103,6 @@ func (js *jobService) FetchAllJobs(ctx context.Context, filters JobFilters) ([]J
 	for _, job := range jobs {
 		fetchedJobs = append(fetchedJobs, MapJobRepoStructToService(job))
 	}
-	
+
 	return fetchedJobs, nil
 }

@@ -25,6 +25,7 @@ const (
 func NewRouter(deps Dependencies) *mux.Router {
 
 	router := mux.NewRouter()
+	router.Use(mux.CORSMethodMiddleware(router))
 
 	// Auth Routes
 	router.HandleFunc("/login", auth.HandleLogin(deps.AuthService)).Methods(http.MethodPost)
@@ -34,7 +35,6 @@ func NewRouter(deps Dependencies) *mux.Router {
 	adminRouter := router.PathPrefix("").Subrouter()
 	// adminRouter.Use(middleware.RequireSuperAdminRole)
 	adminRouter.HandleFunc("/register/admin", admin.RegisterAdmin(deps.AdminService)).Methods(http.MethodPost) // Only for Super Admin, create a new subrouter for this (so that only this route will have the validation of a super-admin) - may have to create a new jwt function to validate only super-admins
-	
 
 	// Worker Routes - protected routes
 	workerRouter := router.PathPrefix("/worker").Subrouter()
@@ -76,7 +76,7 @@ func NewRouter(deps Dependencies) *mux.Router {
 	sectorRouter.HandleFunc(sectorIdParam, sector.UpdateSectorById(deps.SectorService)).Methods(http.MethodPut)
 	sectorRouter.HandleFunc(sectorIdParam, sector.DeleteSectorById(deps.SectorService)).Methods(http.MethodDelete)
 
-	// Routes to Fetch Complete Data - mostly only admin will have access to all this data
+	// Routes to Fetch Complete Data
 	router.HandleFunc("/workers", worker.FetchAllWorkers(deps.WorkerService)).Methods(http.MethodGet)
 	router.HandleFunc("/employers", employer.FetchAllEmployers(deps.EmployerService)).Methods(http.MethodGet)
 	router.HandleFunc("/applications", application.FetchAllApplications(deps.ApplicationService)).Methods(http.MethodGet)

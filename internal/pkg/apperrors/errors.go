@@ -56,10 +56,11 @@ var (
 	ErrNoSectorExists = errors.New("no sector found with id")
 
 	// Admin Errors
-	ErrCreateAdmin = errors.New("failed to create admin")
-	ErrUpdateAdmin = errors.New("failed to update admin data")
-	ErrDeleteAdmin = errors.New("failed to delete admin data")
-	ErrAdminExists = errors.New("admin with same email already exists")
+	ErrCreateAdmin   = errors.New("failed to create admin")
+	ErrUpdateAdmin   = errors.New("failed to update admin data")
+	ErrDeleteAdmin   = errors.New("failed to delete admin data")
+	ErrAdminExists   = errors.New("admin with same email already exists")
+	ErrNoAdminExists = errors.New("no admin found with id")
 
 	// Login Errors
 	ErrInvalidLoginCredentials = errors.New("invalid email or password")

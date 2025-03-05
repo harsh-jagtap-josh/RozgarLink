@@ -19,7 +19,7 @@ type Service interface {
 	CreateWorker(ctx context.Context, workerData Worker) (Worker, error)
 	UpdateWorkerByID(ctx context.Context, workerData Worker) (Worker, error)
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
-	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error)
+	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.ApplicationComplete, error)
 	FetchAllWorkers(ctx context.Context) ([]Worker, error)
 }
 
@@ -102,20 +102,20 @@ func (ws *service) DeleteWorkerByID(ctx context.Context, workerId int) (int, err
 	return id, nil
 }
 
-func (ws *service) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.Application, error) {
+func (ws *service) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]application.ApplicationComplete, error) {
 	workerExists := ws.workerRepo.FindWorkerById(ctx, workerId)
 	if !workerExists {
-		return []application.Application{}, apperrors.ErrNoWorkerExists
+		return []application.ApplicationComplete{}, apperrors.ErrNoWorkerExists
 	}
 
 	applications, err := ws.workerRepo.FetchApplicationsByWorkerId(ctx, workerId)
 	if err != nil {
-		return []application.Application{}, err
+		return []application.ApplicationComplete{}, err
 	}
 
-	var fetchedApplications []application.Application
+	var fetchedApplications []application.ApplicationComplete
 	for _, appl := range applications {
-		fetchedApplications = append(fetchedApplications, application.MapRepoApplicationToService(appl))
+		fetchedApplications = append(fetchedApplications, application.MapRepoApplCompToService(appl))
 	}
 
 	return fetchedApplications, nil

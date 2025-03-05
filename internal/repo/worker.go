@@ -16,7 +16,7 @@ type WorkerStorer interface {
 	DeleteWorkerByID(ctx context.Context, workerId int) (int, error)
 	FindWorkerByEmail(ctx context.Context, email string) bool
 	FindWorkerById(ctx context.Context, id int) bool
-	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error)
+	FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]ApplicationComplete, error)
 	FetchAllWorkers(ctx context.Context) ([]Worker, error)
 }
 
@@ -38,7 +38,7 @@ const (
 	deleteWorkerByIdQuery            = `DELETE FROM workers WHERE id=$1 RETURNING location;`
 	findEmailExistsQuery             = "SELECT id FROM workers WHERE email = $1;"
 	findIdExistsQuery                = "SELECT id FROM workers WHERE id = $1;"
-	fetchApplicationsByWorkerIdQuery = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode FROM applications inner join address on applications.pick_up_location = address.id WHERE applications.worker_id = $1`
+	fetchApplicationsByWorkerIdQuery = `select applications.*, address.details, address.street, address.state, address.city, address.pincode, jobs.title, jobs.description, jobs.skills_required, jobs.sectors, jobs.wage, jobs.vacancy, jobs.date, employers.name, employers.contact_number, employers.email, employers.type from applications inner join address on applications.pick_up_location = address.id inner join jobs on applications.job_id = jobs.id inner join employers on jobs.employer_id = employers.id WHERE applications.worker_id = $1`
 	fetchAllWorkersQuery             = `SELECT workers.*, address.details, address.street, address.city, address.state, address.pincode FROM workers inner join address on workers.location = address.id;`
 )
 
@@ -181,13 +181,13 @@ func (ws *workerStore) FindWorkerById(ctx context.Context, id int) bool {
 	return err == nil
 }
 
-func (ws *workerStore) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]Application, error) {
+func (ws *workerStore) FetchApplicationsByWorkerId(ctx context.Context, workerId int) ([]ApplicationComplete, error) {
 
-	var applications []Application
+	var applications []ApplicationComplete
 
 	err := ws.DB.Select(&applications, fetchApplicationsByWorkerIdQuery, workerId)
 	if err != nil {
-		return []Application{}, err
+		return []ApplicationComplete{}, err
 	}
 	return applications, nil
 }

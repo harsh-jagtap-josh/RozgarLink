@@ -19,7 +19,7 @@ type ApplicationStorer interface {
 	FetchApplicationByID(ctx context.Context, applicationId int) (Application, error)
 	DeleteApplicationByID(ctx context.Context, applicationId int) (int, error)
 	FindApplicationById(ctx context.Context, applicationId int) bool
-	FetchAllApplications(ctx context.Context) ([]Application, error)
+	FetchAllApplications(ctx context.Context) ([]ApplicationComplete, error)
 }
 
 func NewApplicationRepo(db *sqlx.DB) ApplicationStorer {
@@ -35,7 +35,7 @@ const (
 	fethcApplicationByIdQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id where applications.id = $1;`
 	deleteApplicationByIdQuery = `DELETE FROM applications WHERE id=$1 RETURNING pick_up_location;`
 	findApplicationByIdQuery   = `SELECT id FROM applications WHERE id = $1;`
-	fetchAllApplicationsQuery  = `SELECT applications.*, address.details, address.street, address.city, address.state, address.pincode from applications inner join address on applications.pick_up_location = address.id;`
+	fetchAllApplicationsQuery  = `select applications.*, address.details, address.street, address.state, address.city, address.pincode, jobs.title, jobs.description, jobs.skills_required, jobs.sectors, jobs.wage, jobs.vacancy, jobs.date, employers.name, employers.contact_number, employers.email, employers.type from applications inner join address on applications.pick_up_location = address.id inner join jobs on applications.job_id = jobs.id inner join employers on jobs.employer_id = employers.id;`
 )
 
 func (appS *applicationStore) CreateNewApplication(ctx context.Context, applicationData Application) (Application, error) {
@@ -159,12 +159,12 @@ func (appS *applicationStore) FindApplicationById(ctx context.Context, applicati
 	return err == nil
 }
 
-func (appS *applicationStore) FetchAllApplications(ctx context.Context) ([]Application, error) {
+func (appS *applicationStore) FetchAllApplications(ctx context.Context) ([]ApplicationComplete, error) {
 
-	applications := make([]Application, 0)
+	applications := make([]ApplicationComplete, 0)
 	err := appS.DB.Select(&applications, fetchAllApplicationsQuery)
 	if err != nil {
-		return []Application{}, err
+		return []ApplicationComplete{}, err
 	}
 	return applications, nil
 }

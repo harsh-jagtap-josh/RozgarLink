@@ -45,3 +45,65 @@ func MapRepoApplicationToService(application repo.Application) Application {
 		UpdatedAt:     application.UpdatedAt,
 	}
 }
+
+func MapRepoApplCompToService(application repo.ApplicationComplete) ApplicationComplete {
+	return ApplicationComplete{
+		ID:             application.ID,
+		JobID:          application.JobID,
+		WorkerID:       application.WorkerID,
+		Status:         Status(application.Status),
+		ExpectedWage:   application.ExpectedWage,
+		ModeOfArrival:  ModeOfArrival(application.ModeOfArrival),
+		PickUpLocation: application.PickUpLocation,
+		WorkerComment:  application.WorkerComment,
+		AppliedAt:      application.AppliedAt,
+		UpdatedAt:      application.UpdatedAt,
+		Details:        application.Details,
+		Street:         application.Street,
+		City:           application.City,
+		State:          application.State,
+		Pincode:        application.Pincode,
+		JobTitle:       application.JobTitle,
+		Description:    application.Description,
+		SkillsRequired: application.SkillsRequired,
+		JobSectors:     application.JobSectors,
+		JobWage:        application.JobWage,
+		Vacancy:        application.Vacancy,
+		JobDate:        application.JobDate,
+		EmployerName:   application.EmployerName,
+		ContactNumber:  application.ContactNumber,
+		EmployerEmail:  application.EmployerEmail,
+		EmployerType:   application.EmployerType,
+	}
+}
+
+func MapRepoApplCompEmpToService(application repo.ApplicationCompleteEmp) ApplicationCompleteEmp {
+	return ApplicationCompleteEmp{
+		ID:             application.ID,
+		JobID:          application.JobID,
+		WorkerID:       application.WorkerID,
+		Status:         Status(application.Status),
+		ExpectedWage:   application.ExpectedWage,
+		ModeOfArrival:  ModeOfArrival(application.ModeOfArrival),
+		PickUpLocation: application.PickUpLocation,
+		WorkerComment:  application.WorkerComment,
+		AppliedAt:      application.AppliedAt,
+		UpdatedAt:      application.UpdatedAt,
+		Details:        application.Details,
+		Street:         application.Street,
+		City:           application.City,
+		State:          application.State,
+		Pincode:        application.Pincode,
+		JobTitle:       application.JobTitle,
+		Description:    application.Description,
+		SkillsRequired: application.SkillsRequired,
+		JobSectors:     application.JobSectors,
+		JobWage:        application.JobWage,
+		Vacancy:        application.Vacancy,
+		JobDate:        application.JobDate,
+		WorkerName:     application.WorkerName,
+		ContactNumber:  application.ContactNumber,
+		WorkerEmail:    application.WorkerEmail,
+		WorkerGender:   application.WorkerGender,
+	}
+}

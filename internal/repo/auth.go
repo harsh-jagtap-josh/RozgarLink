@@ -43,6 +43,20 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 		}
 	}
 	if len(user.Email) == 0 {
+		rows, err = authS.DB.NamedQuery(fetchAdminByEmailQuery, loginData)
+		if err != nil {
+			return LoginUserData{}, err
+		} else {
+			defer rows.Close()
+			if rows.Next() {
+				err = rows.StructScan(&user)
+				if err != nil {
+					return LoginUserData{}, apperrors.ErrInvalidLoginCredentials
+				}
+			}
+		}
+	}
+	if len(user.Email) == 0 {
 		rows, err = authS.DB.NamedQuery(fetchEmployerByEmailQuery, loginData)
 		if err != nil {
 			return LoginUserData{}, err
@@ -54,20 +68,6 @@ func (authS *authStore) Login(ctx context.Context, loginData LoginRequest) (Logi
 					return LoginUserData{}, apperrors.ErrInvalidLoginCredentials
 				} else {
 					user.Role = "employer"
-				}
-			}
-		}
-	}
-	if len(user.Email) == 0 {
-		rows, err = authS.DB.NamedQuery(fetchAdminByEmailQuery, loginData)
-		if err != nil {
-			return LoginUserData{}, err
-		} else {
-			defer rows.Close()
-			if rows.Next() {
-				err = rows.StructScan(&user)
-				if err != nil {
-					return LoginUserData{}, apperrors.ErrInvalidLoginCredentials
 				}
 			}
 		}

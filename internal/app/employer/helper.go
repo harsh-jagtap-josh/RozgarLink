@@ -35,6 +35,7 @@ func MapServiceToRepoDomain(employer Employer) repo.Employer {
 		Email:        employer.Email,
 		Type:         repo.EmployerType(employer.Type),
 		Sectors:      employer.Sectors,
+		Password:     employer.Password,
 		Location:     employer.Location.ID,
 		IsVerified:   employer.IsVerified,
 		Rating:       employer.Rating,

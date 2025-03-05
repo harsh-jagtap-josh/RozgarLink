@@ -50,9 +50,9 @@ func RegisterWorker(workerSvc worker.Service) func(w http.ResponseWriter, r *htt
 func HandleLogin(authService Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-
 		var req LoginRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
 			logger.Errorw(ctx, apperrors.ErrInvalidRequestBody.Error(), zap.Error(err))
 			middleware.HandleErrorResponse(ctx, w, apperrors.ErrInvalidRequestBody.Error()+", "+err.Error(), http.StatusBadRequest)
 			return
@@ -67,7 +67,7 @@ func HandleLogin(authService Service) func(w http.ResponseWriter, r *http.Reques
 			}
 
 			logger.Errorw(ctx, apperrors.ErrFailedLogin.Error(), zap.Error(err))
-			middleware.HandleErrorResponse(ctx, w, err.Error(), http.StatusInternalServerError)
+			middleware.HandleErrorResponse(ctx, w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
