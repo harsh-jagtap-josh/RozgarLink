@@ -230,7 +230,7 @@ func (jobS *jobStore) FetchAllJobs(ctx context.Context, filters JobFilters) ([]J
 
 	err := jobS.DB.Select(&jobs, query, args...)
 	if err != nil {
-		return jobs, err
+		return []Job{}, err
 	}
 	return jobs, nil
 }
