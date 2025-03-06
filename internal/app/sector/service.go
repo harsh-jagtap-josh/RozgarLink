@@ -72,9 +72,11 @@ func (sectorS *sectorService) DeleteSectorById(ctx context.Context, sectorId int
 func (sectorS *sectorService) FetchAllSectors(ctx context.Context) ([]Sector, error) {
 	var sectors []Sector
 	repoSectors, err := sectorS.sectorRepo.FetchAllSectors(ctx)
+	
 	if err != nil {
 		return []Sector{}, err
 	}
+
 	for _, val := range repoSectors {
 		sectors = append(sectors, MapSectorRepoToService(val))
 	}
