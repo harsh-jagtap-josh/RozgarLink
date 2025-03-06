@@ -481,38 +481,166 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 	}
 }
 
-// func (suite *JobServiceTestSuite) TestDeleteJob() {
-// 	type testCase struct {
-// 		name           string
-// 		setup          func()
-// 		input          int
-// 		expectedOutput int
-// 		expectedError  bool
-// 	}
-// 	testCases := []testCase{
-// 		{
-// 			name: "success",
-// 			setup: func() {
-// 				suite.jobRepo.On("DeleteJobById", mock.Anything, 1).Return(1, nil)
-// 			},
-// 			input:          1,
-// 			expectedOutput: 1,
-// 			expectedError:  false,
-// 		},
-// 	}
-// 	for _, tc := range testCases {
-// 		suite.T().Run(tc.name, func(t *testing.T) {
-// 			tc.setup()
-// 			deleted, err := suite.service.DeleteJobByID(context.Background(), tc.input)
-// 			if tc.expectedError {
-// 				suite.Require().Error(err)
-// 			} else {
-// 				suite.Require().NoError(err)
-// 				suite.Require().Equal(tc.expectedOutput, deleted)
-// 			}
-// 		})
-// 	}
-// }
+func (suite *JobServiceTestSuite) TestDeleteJob() {
+	type testCase struct {
+		name           string
+		setup          func()
+		input          int
+		expectedOutput int
+		expectedError  bool
+	}
+	testCases := []testCase{
+		// {
+		// 	name: "success",
+		// 	setup: func() {
+		// 		suite.jobRepo.On("DeleteJobById", mock.Anything, 1).Return(1, nil)
+		// 	},
+		// 	input:          1,
+		// 	expectedOutput: 1,
+		// 	expectedError:  false,
+		// },
+	}
+	for _, tc := range testCases {
+		suite.T().Run(tc.name, func(t *testing.T) {
+			tc.setup()
+			deleted, err := suite.service.DeleteJobByID(context.Background(), tc.input)
+			if tc.expectedError {
+				suite.Require().Error(err)
+			} else {
+				suite.Require().NoError(err)
+				suite.Require().Equal(tc.expectedOutput, deleted)
+			}
+		})
+	}
+}
+
+func (suite *JobServiceTestSuite) TestFetchAllJobsByEmployerID() {
+	type testCase struct {
+		name           string
+		setup          func()
+		expectedOutput []Job
+		expectedError  bool
+	}
+	testCases := []testCase{
+		// {
+		// 	name: "success",
+		// 	setup: func() {
+		// 		suite.jobRepo.On("FetchAllJobsByEmployerID", mock.Anything, 3).Return([]repo.Job{
+		// 			{
+		// 				ID:              1,
+		// 				EmployerID:      3,
+		// 				Title:           "Software Developer",
+		// 				RequiredGender:  "Male",
+		// 				Description:     "some random description",
+		// 				DurationInHours: 12,
+		// 				SkillsRequired:  "Frontend, Backend",
+		// 				Sectors:         "IT, Technology, Computers",
+		// 				Wage:            2500,
+		// 				Vacancy:         3,
+		// 				Location:        1,
+		// 				Date:            "2025-12-12",
+		// 				StartHour:       "",
+		// 				EndHour:         "",
+		// 				CreatedAt:       time.Time{},
+		// 				UpdatedAt:       time.Time{},
+		// 				Details:         "Steet 123, Near ABC",
+		// 				Street:          "Street 123",
+		// 				City:            "Pune",
+		// 				State:           "Maharastra",
+		// 				Pincode:         411057,
+		// 			}, {
+		// 				ID:              2,
+		// 				EmployerID:      3,
+		// 				Title:           "Construction Worker",
+		// 				RequiredGender:  "Male",
+		// 				Description:     "some random description",
+		// 				DurationInHours: 12,
+		// 				SkillsRequired:  "Construction",
+		// 				Sectors:         "Construction",
+		// 				Wage:            1000,
+		// 				Vacancy:         5,
+		// 				Location:        2,
+		// 				Date:            "2025-12-12",
+		// 				StartHour:       "",
+		// 				EndHour:         "",
+		// 				CreatedAt:       time.Time{},
+		// 				UpdatedAt:       time.Time{},
+		// 				Details:         "Steet 123, Near ABC",
+		// 				Street:          "Street 123",
+		// 				City:            "Pune",
+		// 				State:           "Maharastra",
+		// 				Pincode:         411057,
+		// 			},
+		// 		}, nil)
+		// 	},
+		// 	expectedOutput: []Job{
+		// 		{
+		// 			ID:              1,
+		// 			EmployerID:      3,
+		// 			Title:           "Software Developer",
+		// 			RequiredGender:  "Male",
+		// 			Description:     "some random description",
+		// 			DurationInHours: 12,
+		// 			SkillsRequired:  "Frontend, Backend",
+		// 			Sectors:         "IT, Technology, Computers",
+		// 			Wage:            2500,
+		// 			Vacancy:         3,
+		// 			Location: worker.Address{
+		// 				ID:      1,
+		// 				Details: "Steet 123, Near ABC",
+		// 				Street:  "Street 123",
+		// 				City:    "Pune",
+		// 				State:   "Maharastra",
+		// 				Pincode: 411057,
+		// 			},
+		// 			Date:      "2025-12-12",
+		// 			StartHour: "",
+		// 			EndHour:   "",
+		// 			CreatedAt: time.Time{},
+		// 			UpdatedAt: time.Time{},
+		// 		}, {
+		// 			ID:         2,
+		// 			EmployerID: 3,
+
+		// 			Title:           "Construction Worker",
+		// 			RequiredGender:  "Male",
+		// 			Description:     "some random description",
+		// 			DurationInHours: 12,
+		// 			SkillsRequired:  "Construction",
+		// 			Sectors:         "Construction",
+		// 			Wage:            1000,
+		// 			Vacancy:         5,
+		// 			Location: worker.Address{
+		// 				ID:      2,
+		// 				Details: "Steet 123, Near ABC",
+		// 				Street:  "Street 123",
+		// 				City:    "Pune",
+		// 				State:   "Maharastra",
+		// 				Pincode: 411057,
+		// 			},
+		// 			Date:      "2025-12-12",
+		// 			StartHour: "",
+		// 			EndHour:   "",
+		// 			CreatedAt: time.Time{},
+		// 			UpdatedAt: time.Time{},
+		// 		},
+		// 	},
+		// 	expectedError: false,
+		// },
+	}
+	for _, tc := range testCases {
+		suite.T().Run(tc.name, func(t *testing.T) {
+			tc.setup()
+			jobs, err := suite.service.FetchApplicationsByJobId(context.Background(), 3)
+			if tc.expectedError {
+				suite.Require().Error(err)
+			} else {
+				suite.Require().NoError(err)
+				suite.Require().Equal(tc.expectedOutput, jobs)
+			}
+		})
+	}
+}
 
 func TestOrderServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(JobServiceTestSuite))
