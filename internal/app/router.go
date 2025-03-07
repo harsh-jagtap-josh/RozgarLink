@@ -32,15 +32,15 @@ func NewRouter(deps Dependencies) *mux.Router {
 	router.HandleFunc("/register/worker", auth.RegisterWorker(deps.WorkerService)).Methods(http.MethodPost)
 	router.HandleFunc("/register/employer", employer.RegisterEmployer(deps.EmployerService)).Methods(http.MethodPost)
 
-	adminRouter := router.PathPrefix("").Subrouter()
 	// adminRouter.Use(middleware.RequireSuperAdminRole)
-	adminRouter.HandleFunc("/register/admin", admin.RegisterAdmin(deps.AdminService)).Methods(http.MethodPost) // Only for Super Admin, create a new subrouter for this (so that only this route will have the validation of a super-admin) - may have to create a new jwt function to validate only super-admins
+	adminRouter := router.PathPrefix("").Subrouter()
+	adminRouter.HandleFunc("/register/admin", admin.RegisterAdmin(deps.AdminService)).Methods(http.MethodPost)
 
 	// Worker Routes - protected routes
-	workerRouter := router.PathPrefix("/worker").Subrouter()
 	// workerRouter.Use(middleware.ValidateJWT) // validate JWT token
-	workerRouter.HandleFunc(workerIdParam, worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
 	// workerRouter.Use(middleware.RequireSameUserOrAdmin) // only worker with same ID has access to or admin
+	workerRouter := router.PathPrefix("/worker").Subrouter()
+	workerRouter.HandleFunc(workerIdParam, worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
 	workerRouter.HandleFunc(workerIdParam, worker.UpdateWorkerByID(deps.WorkerService)).Methods(http.MethodPut)
 	workerRouter.HandleFunc(workerIdParam, worker.DeleteWorkerByID(deps.WorkerService)).Methods(http.MethodDelete)
 	workerRouter.HandleFunc(workerIdParam+"/applications", worker.FetchApplicationsByWorkerId(deps.WorkerService)).Methods(http.MethodGet)

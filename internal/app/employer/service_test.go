@@ -2,7 +2,6 @@ package employer
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -98,7 +97,6 @@ func (suite *EmployerServiceTestSuite) TestFetchEmployerByID() {
 			test.setup()
 			output, err := suite.service.FetchEmployerByID(context.Background(), test.employerId)
 			suite.Equal(test.expectedOutput, output)
-			fmt.Println(output)
 			suite.Equal(test.expectedError, err)
 		})
 	}
