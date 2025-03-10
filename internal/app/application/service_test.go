@@ -2,6 +2,8 @@ package application
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
@@ -89,6 +91,15 @@ func (suite *ApplicationServiceTestSuite) TestFetchApplicationById() {
 			applicationId: 1,
 			setup: func() {
 				suite.applicationRepo.On("FetchApplicationByID", mock.Anything, 1).Return(repo.Application{}, apperrors.ErrNoApplicationExists)
+			},
+			expectedOutput: Application{},
+			expectedError:  true,
+		},
+		{
+			name:          "application not found",
+			applicationId: 1,
+			setup: func() {
+				suite.applicationRepo.On("FetchApplicationByID", mock.Anything, 1).Return(repo.Application{}, sql.ErrNoRows)
 			},
 			expectedOutput: Application{},
 			expectedError:  true,
@@ -575,6 +586,25 @@ func (suite *ApplicationServiceTestSuite) TestDeleteApplicationById() {
 			},
 			expectedOutput:  1,
 			isExpectedError: false,
+		},
+		{
+			name:           "db error",
+			application_id: 1,
+			setup: func() {
+				suite.applicationRepo.On("FindApplicationById", mock.Anything, 1).Return(true)
+				suite.applicationRepo.On("DeleteApplicationByID", mock.Anything, 1).Return(-1, errors.New("db error while delete application"))
+			},
+			expectedOutput:  -1,
+			isExpectedError: true,
+		},
+		{
+			name:           "application with id not found",
+			application_id: 1,
+			setup: func() {
+				suite.applicationRepo.On("FindApplicationById", mock.Anything, 1).Return(false)
+			},
+			expectedOutput:  -1,
+			isExpectedError: true,
 		},
 	}
 
