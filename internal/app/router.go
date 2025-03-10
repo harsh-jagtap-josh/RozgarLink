@@ -37,9 +37,11 @@ func NewRouter(deps Dependencies) *mux.Router {
 	adminRouter.HandleFunc("/register/admin", admin.RegisterAdmin(deps.AdminService)).Methods(http.MethodPost)
 
 	// Worker Routes - protected routes
-	// workerRouter.Use(middleware.ValidateJWT) // validate JWT token
-	// workerRouter.Use(middleware.RequireSameUserOrAdmin) // only worker with same ID has access to or admin
 	workerRouter := router.PathPrefix("/worker").Subrouter()
+
+	// workerRouter.Use(middleware.ValidateJWT)            // validate JWT token
+	// workerRouter.Use(middleware.RequireSameUserOrAdmin) // only worker with same ID has access to or admin
+
 	workerRouter.HandleFunc(workerIdParam, worker.FetchWorkerByID(deps.WorkerService)).Methods(http.MethodGet)
 	workerRouter.HandleFunc(workerIdParam, worker.UpdateWorkerByID(deps.WorkerService)).Methods(http.MethodPut)
 	workerRouter.HandleFunc(workerIdParam, worker.DeleteWorkerByID(deps.WorkerService)).Methods(http.MethodDelete)

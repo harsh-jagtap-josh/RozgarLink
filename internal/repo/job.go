@@ -232,5 +232,6 @@ func (jobS *jobStore) FetchAllJobs(ctx context.Context, filters JobFilters) ([]J
 	if err != nil {
 		return []Job{}, err
 	}
+
 	return jobs, nil
 }
