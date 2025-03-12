@@ -89,6 +89,6 @@ const MsgFailedToFetchApplication = "failed to fetch application"
 const MsgInvalidSectorId = "invalid sector id provided"
 const MsgFailedToFetchSector = "failed to fetch sector"
 
-func HttpErrorResponseMessage(warning, message string, id string) string {
+func HttpErrorResponseMessage(warning, message, id string) string {
 	return fmt.Sprintf("%s: %s, id: %v", warning, message, id)
 }

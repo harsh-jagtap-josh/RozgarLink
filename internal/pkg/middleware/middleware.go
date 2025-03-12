@@ -27,12 +27,14 @@ func HandleErrorResponse(ctx context.Context, w http.ResponseWriter, errMessage 
 	response := ErrorResponse{
 		ErrorMessage: errMessage,
 	}
+
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		logger.Errorw(ctx, apperrors.ErrMarshalPayload.Error(), zap.Error(err))
 		w.Write(HttpErrorResponseMessages(w, apperrors.ErrMarshalPayload.Error(), http.StatusInternalServerError))
 		return
 	}
+
 	_, err = w.Write(jsonData)
 	if err != nil {
 		logger.Errorw(ctx, "error occured while writing http error response", zap.Error(err))
