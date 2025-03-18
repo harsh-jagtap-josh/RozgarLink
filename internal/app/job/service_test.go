@@ -1,4 +1,4 @@
-package job
+package job_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/application"
+	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/job"
 	"github.com/harsh-jagtap-josh/RozgarLink/internal/app/worker"
 
 	// "github.com/harsh-jagtap-josh/RozgarLink/internal/pkg/apperrors"
@@ -18,13 +19,13 @@ import (
 
 type JobServiceTestSuite struct {
 	suite.Suite
-	service Service
+	service job.Service
 	jobRepo mocks.JobStorer
 }
 
 func (suite *JobServiceTestSuite) SetupTest() {
 	suite.jobRepo = mocks.JobStorer{}
-	suite.service = NewService(&suite.jobRepo)
+	suite.service = job.NewService(&suite.jobRepo)
 }
 
 func (suite *JobServiceTestSuite) TearDownTest() {
@@ -34,15 +35,15 @@ func (suite *JobServiceTestSuite) TearDownTest() {
 func (suite *JobServiceTestSuite) TestFetchAllJobs() {
 	type testCase struct {
 		name           string
-		input          JobFilters
+		input          job.JobFilters
 		setup          func()
-		expectedOutput []Job
+		expectedOutput []job.Job
 		expectedError  bool
 	}
 	testCases := []testCase{
 		{
 			name:  "success",
-			input: JobFilters{},
+			input: job.JobFilters{},
 			setup: func() {
 				suite.jobRepo.On("FetchAllJobs", mock.Anything, repo.JobFilters{}).Return([]repo.Job{
 					{
@@ -92,7 +93,7 @@ func (suite *JobServiceTestSuite) TestFetchAllJobs() {
 					},
 				}, nil)
 			},
-			expectedOutput: []Job{
+			expectedOutput: []job.Job{
 				{
 					ID:              1,
 					EmployerID:      3,
@@ -147,11 +148,11 @@ func (suite *JobServiceTestSuite) TestFetchAllJobs() {
 		},
 		{
 			name:  "db error",
-			input: JobFilters{},
+			input: job.JobFilters{},
 			setup: func() {
 				suite.jobRepo.On("FetchAllJobs", mock.Anything, repo.JobFilters{}).Return([]repo.Job{}, errors.New("db error while list jobs"))
 			},
-			expectedOutput: []Job{},
+			expectedOutput: []job.Job{},
 			expectedError:  true,
 		},
 	}
@@ -177,7 +178,7 @@ func (suite *JobServiceTestSuite) TestFetchJobByID() {
 		name           string
 		setup          func()
 		input          int
-		expectedOutput Job
+		expectedOutput job.Job
 		expectedError  bool
 	}
 	testCases := []testCase{
@@ -209,7 +210,7 @@ func (suite *JobServiceTestSuite) TestFetchJobByID() {
 					Pincode:         411057,
 				}, nil)
 			},
-			expectedOutput: Job{
+			expectedOutput: job.Job{
 				ID:              1,
 				EmployerID:      3,
 				Title:           "Software Developer",
@@ -242,7 +243,7 @@ func (suite *JobServiceTestSuite) TestFetchJobByID() {
 			setup: func() {
 				suite.jobRepo.On("FetchJobById", mock.Anything, 1).Return(repo.Job{}, errors.New("db error while fetch job details"))
 			},
-			expectedOutput: Job{},
+			expectedOutput: job.Job{},
 			expectedError:  true,
 		},
 	}
@@ -266,8 +267,8 @@ func (suite *JobServiceTestSuite) TestCreateJob() {
 	type testCase struct {
 		name           string
 		setup          func()
-		input          Job
-		expectedOutput Job
+		input          job.Job
+		expectedOutput job.Job
 		expectedError  bool
 	}
 	testCases := []testCase{
@@ -319,7 +320,7 @@ func (suite *JobServiceTestSuite) TestCreateJob() {
 					Pincode:         411057,
 				}, nil)
 			},
-			input: Job{
+			input: job.Job{
 				EmployerID:      3,
 				Title:           "Software Developer",
 				RequiredGender:  "Male",
@@ -343,7 +344,7 @@ func (suite *JobServiceTestSuite) TestCreateJob() {
 				CreatedAt: time.Time{},
 				UpdatedAt: time.Time{},
 			},
-			expectedOutput: Job{
+			expectedOutput: job.Job{
 				ID:              1,
 				EmployerID:      3,
 				Title:           "Software Developer",
@@ -396,7 +397,7 @@ func (suite *JobServiceTestSuite) TestCreateJob() {
 					Pincode:         411057,
 				}).Return(repo.Job{}, errors.New("db error while create job"))
 			},
-			input: Job{
+			input: job.Job{
 				EmployerID:      3,
 				Title:           "Software Developer",
 				RequiredGender:  "Male",
@@ -420,7 +421,7 @@ func (suite *JobServiceTestSuite) TestCreateJob() {
 				CreatedAt: time.Time{},
 				UpdatedAt: time.Time{},
 			},
-			expectedOutput: Job{},
+			expectedOutput: job.Job{},
 			expectedError:  true,
 		},
 	}
@@ -445,8 +446,8 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 	type testCase struct {
 		name           string
 		setup          func()
-		input          Job
-		expectedOutput Job
+		input          job.Job
+		expectedOutput job.Job
 		expectedError  bool
 	}
 	testCases := []testCase{
@@ -499,7 +500,7 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 					Pincode:         411057,
 				}, nil)
 			},
-			input: Job{
+			input: job.Job{
 				ID:              1,
 				EmployerID:      3,
 				Title:           "Software Developer",
@@ -524,7 +525,7 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 				CreatedAt: time.Time{},
 				UpdatedAt: time.Time{},
 			},
-			expectedOutput: Job{
+			expectedOutput: job.Job{
 				ID:              1,
 				EmployerID:      3,
 				Title:           "Software Developer",
@@ -577,7 +578,7 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 					Pincode:         411057,
 				}).Return(repo.Job{}, errors.New("db error while create job"))
 			},
-			input: Job{
+			input: job.Job{
 				EmployerID:      3,
 				Title:           "Software Developer",
 				RequiredGender:  "Male",
@@ -601,7 +602,7 @@ func (suite *JobServiceTestSuite) TestUpdateJob() {
 				CreatedAt: time.Time{},
 				UpdatedAt: time.Time{},
 			},
-			expectedOutput: Job{},
+			expectedOutput: job.Job{},
 			expectedError:  true,
 		},
 	}
