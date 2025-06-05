@@ -93,8 +93,8 @@ func (js *jobService) FetchApplicationsByJobId(ctx context.Context, jobId int) (
 }
 
 func (js *jobService) FetchAllJobs(ctx context.Context, filters JobFilters) ([]Job, error) {
-	filtersRepo := JobFilters(MapJobFilterServiceToRepo(filters))
-	jobs, err := js.jobRepo.FetchAllJobs(ctx, repo.JobFilters(filtersRepo))
+
+	jobs, err := js.jobRepo.FetchAllJobs(ctx, repo.JobFilters(filters))
 
 	if err != nil {
 		return []Job{}, err

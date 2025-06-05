@@ -63,19 +63,6 @@ func MapJobServiceStructToRepo(job Job) repo.Job {
 	}
 }
 
-func MapJobFilterServiceToRepo(filters JobFilters) repo.JobFilters {
-	return repo.JobFilters{
-		Title:     filters.Title,
-		Sector:    filters.Sector,
-		WageMin:   filters.WageMin,
-		WageMax:   filters.WageMax,
-		StartDate: filters.StartDate,
-		EndDate:   filters.EndDate,
-		City:      filters.City,
-		Gender:    filters.Gender,
-	}
-}
-
 func retrieveQueryParams(queryParams url.Values) JobFilters {
 	jobFilters := JobFilters{}
 
@@ -91,29 +78,35 @@ func retrieveQueryParams(queryParams url.Values) JobFilters {
 	if title != "" {
 		jobFilters.Title = title
 	}
+
 	if sector != "" {
 		jobFilters.Sector = sector
 	}
+
 	if wageMin != "" {
 		if min, err := strconv.Atoi(wageMin); err == nil {
 			jobFilters.WageMin = min
 		}
 	}
+
 	if wageMax != "" {
 		if max, err := strconv.Atoi(wageMax); err == nil {
 			jobFilters.WageMax = max
 		}
 	}
+
 	if startDate != "" {
 		if parsed, err := time.Parse("2006-01-02", startDate); err == nil {
 			jobFilters.StartDate = parsed
 		}
 	}
+
 	if endDate != "" {
 		if parsed, err := time.Parse("2006-01-02", endDate); err == nil {
 			jobFilters.EndDate = parsed
 		}
 	}
+
 	if city != "" {
 		jobFilters.City = city
 	}
